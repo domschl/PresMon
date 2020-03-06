@@ -179,7 +179,7 @@ class AsyncHABinarySensorPresence():
                 cname+=c
         self.name=cname
         nd=hex(uuid.getnode())[2:]
-        self.uuid=f"{nd[0:2]}:{nd[2:4]}:{nd[4:6]}:{nd[6:8]}-{name}"
+        self.uuid=f"{nd[0:2]}:{nd[2:4]}:{nd[4:6]}:{nd[6:8]}:{nd[8:10]}:{nd[10:12]}-{name}"
 
         self.mqtt_host=mqtt_host
         self.homeassistant_discovery=homeassistant_discovery
