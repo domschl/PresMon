@@ -18,3 +18,10 @@ t.b.d.
 ## Installation
 
 Requirements: `paho-mqtt`, `keyboard`, `bluepy` [optional].
+Needs to be run as root, either as systemd service, or via
+
+```bash
+sudo python presmon.py
+```
+
+Mac: the terminal that runs this script needs Mac OS Catalina 'Accessibility' right, otherwise this will just crash.
