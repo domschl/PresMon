@@ -1,11 +1,11 @@
 # PresMon [WIP]
 Computer presence monitoring via keyboard events and [Home Assistant](https://www.home-assistant.io/) binary_sensor presence integration.
 
-``Work in Progress``
+**Work in Progress**
 
 `PresMon` is a python daemon (installable as systemd service) that monitors a computer for input activity, and generates a presence signal. The presence information is publish via MQTT and is then available as binary_sensor within Home Assitant
 
-Home Assistant's mqtt auto-discovery for mqtt is supported, a presence sensor (type binary_sensor, device_class presence), with name defined in presmon.json, `ha_presence_devname`, s.b.
+Home Assistant's mqtt auto-discovery is supported, a presence sensor (type binary_sensor, device_class presence), with name defined in presmon.json, `binary_sensor.<ha_presence_devname>` is automatically generated in Home Assistant.
 
 ## Configuration
 
@@ -34,6 +34,8 @@ sudo python presmon.py
 ```
 
 Mac: the terminal that runs this script needs Mac OS Catalina 'Accessibility' right, otherwise this will just crash.
+
+Once the script runs, a new binary_sensor can be found in Home Assistant (name: `binary_sensor/<ha_presence_devname>`).
 
 ## Notes
 
