@@ -75,6 +75,7 @@ class AsyncMqtt:
         self.loop = loop
         self.mqtt_server = mqtt_server
         self.reconnect_delay=reconnect_delay
+        self.initial_connect_maxtime=30
 
         self.got_message = None
 
@@ -90,7 +91,19 @@ class AsyncMqtt:
             if last_will_message is None:
                 last_will_message=""
             self.client.will_set(last_will_topic, last_will_message, 0, True)
-        self.connect()
+
+        connect_start=time.time()
+        connected=False
+        while connected is False:
+            connected=self.connect()
+            if connected is False:
+                if time.time()-connect_start<self.initial_connect_maxtime:
+                    self.log.debug("Trying to connect again...")
+                    time.sleep(2)
+                else:
+                    break
+        if connected is False:
+            self.log.error("Initial connection to MQTT failed, stopping retries.")
 
 
     def connect(self):
@@ -98,6 +111,7 @@ class AsyncMqtt:
         try:
             self.client.connect(self.mqtt_server, 1883, 45)
             self.client.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
+            self.log.debug("mqtt socket connected.")
             return True
         except Exception as e:
             self.log.debug(f"Connection to {self.mqtt_server} failed: {e}")

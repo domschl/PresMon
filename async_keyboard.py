@@ -80,6 +80,7 @@ class AsyncKeyboardPresence():
                     state_change=True
             except asyncio.TimeoutError:
                 if self.state is True or time.time()-self.last_time > self.refresh_time:
+                    self.last_time=time.time()
                     self.state=False
                     state_change=True
         xstate={'cmd': 'presence',
