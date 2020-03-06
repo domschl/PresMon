@@ -1,0 +1,8 @@
+{
+    "keyboard": true,
+    "keyboard_timeout": 180,
+    "ble": false,
+    "ha_mqtt": true,
+    "ha_presence_devname", "my-computer-name-presence",
+    "mqtt_server": "mqtt-server-hostname"
+}

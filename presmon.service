@@ -1,0 +1,14 @@
+[Unit]
+Description=Presence Monitor
+After=network.target
+After=network-online.target
+After=mosquitto.target
+Requires=mosquitto
+
+[Service]
+Type=simple
+WorkingDirectory=/usr/local/bin/presmon
+ExecStart=/usr/bin/python /usr/local/bin/presmon/presmon.py
+
+[Install]
+WantedBy=multi-user.target
