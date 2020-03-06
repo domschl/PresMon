@@ -20,7 +20,7 @@ Home Assistant's mqtt auto-discovery is supported, a presence sensor (type binar
 | `"keyboard_timeout"` | Default `180`, number of seconds after the last keyboard event when precence information is switched to absent. |
 | `"ble"` | Default `false`, on `true` python moduel `bluepy` is required. Functionality NOT YET COMPLETED. |
 | `"ha_mqtt"` | Default `true`. On `true` python module `paho-mqtt` is required, and presence information is published via mqtt. |
-| `"ha_presence_devname"` | A name for this computer. The name is used to generate an mqtt topic for publishing the presence information, topic: `<name>/presence/state`, payload: `on` (string, presence detected) or `off`.  |
+| `"ha_presence_devname"` | A name for this computer. The name is used (1) to generate an mqtt topic for publishing the presence information, topic: `<name>/presence/state`, payload: `on` (string, presence detected) or `off`. (2) to derive the name of a new Home Assistant binary sensor: `binary_sensor.<ha_presence_devname>`. |
 | `"mqtt_server"` | Hostname of mqtt server |
 
 
