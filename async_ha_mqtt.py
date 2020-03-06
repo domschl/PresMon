@@ -95,12 +95,19 @@ class AsyncMqtt:
 
     def connect(self):
         self.active_disconnect=False
-        self.client.connect(self.mqtt_server, 1883, 45)
-        self.client.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
+        try:
+            self.client.connect(self.mqtt_server, 1883, 45)
+            self.client.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
+            return True
+        except Exception as e:
+            self.log.debug(f"Connection to {self.mqtt_server} failed: {e}")
+            return False
 
     async def reconnect(self):
-        await asyncio.sleep(self.reconnect_delay)
-        self.connect()
+        is_connected=False
+        while is_connected==False:
+            await asyncio.sleep(self.reconnect_delay)
+            is_connected=self.connect()
 
     def on_connect(self, client, userdata, flags, rc):
         self.disconnected = self.loop.create_future()
