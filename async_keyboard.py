@@ -8,6 +8,7 @@ import asyncio
 import keyboard
 
 class AsyncInputEventMonitor():
+    '''Async wrapper for `keyboard` module.'''
     def __init__(self):
         self.log = logging.getLogger("InputMonitor")
         self.loop = asyncio.get_event_loop()
@@ -53,22 +54,32 @@ class AsyncInputEventMonitor():
         return xev
 
 class AsyncKeyboardPresence():
-    def __init__(self, timeout=180):
+    '''Generates a presence state by monitoring keyboard events.
+    
+    Considers presence state `away` if no input events for `timeout` seconds. Generate
+    a presence event at least every `refresh_time` seconds, even if state hasn't changed.'''
+    def __init__(self, timeout=300, refresh_time=60):
         self.log = logging.getLogger("KeyboardPresence")
         self.input_event_timeout=timeout
         self.input_events=AsyncInputEventMonitor()
         self.state=False
+        self.last_time=0
+        if refresh_time is not None and refresh_time!=0:
+            self.refresh_time=refresh_time
+        else:
+            self.refresh_time=365*24*3600  # [once a year is almost never]
 
     async def presence(self):
         state_change=False
         while state_change is False:
             try:
                 await asyncio.wait_for(self.input_events.input(), timeout=self.input_event_timeout)
-                if self.state is False:
+                if self.state is False or time.time()-self.last_time > self.refresh_time:
+                    self.last_time=time.time()
                     self.state=True
                     state_change=True
             except asyncio.TimeoutError:
-                if self.state is True:
+                if self.state is True or time.time()-self.last_time > self.refresh_time:
                     self.state=False
                     state_change=True
         xstate={'cmd': 'presence',

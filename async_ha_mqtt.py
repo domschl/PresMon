@@ -10,6 +10,7 @@ import paho.mqtt.client as mqtt
 
 
 class AsyncMqttHelper:
+    '''Helper module for async wrapper for paho mqtt'''
     def __init__(self, log, loop, client):
         self.log = log
         self.loop = loop
@@ -68,10 +69,12 @@ class AsyncMqttHelper:
 
 
 class AsyncMqtt:
-    def __init__(self, loop, mqtt_server, last_will_topic=None, last_will_message=None):
+    '''Async wrapper for paho_mqtt'''
+    def __init__(self, loop, mqtt_server, last_will_topic=None, last_will_message=None, reconnect_delay=1):
         self.log = logging.getLogger("AsyncMqtt")
         self.loop = loop
         self.mqtt_server = mqtt_server
+        self.reconnect_delay=reconnect_delay
 
         self.got_message = None
 
@@ -87,10 +90,17 @@ class AsyncMqtt:
             if last_will_message is None:
                 last_will_message=""
             self.client.will_set(last_will_topic, last_will_message, 0, True)
+        self.connect()
 
+
+    def connect(self):
+        self.active_disconnect=False
         self.client.connect(self.mqtt_server, 1883, 45)
         self.client.socket().setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
 
+    async def reconnect(self):
+        await asyncio.sleep(self.reconnect_delay)
+        self.connect()
 
     def on_connect(self, client, userdata, flags, rc):
         self.disconnected = self.loop.create_future()
@@ -119,10 +129,15 @@ class AsyncMqtt:
     def on_disconnect(self, client, userdata, rc):
         self.log.debug("on_disconnect")
         self.disconnected.set_result(rc)
+        if self.active_disconnect is not True and self.reconnect_delay and self.reconnect_delay>0:
+            self.log.debug("Trying to reconnect...")
+            asyncio.create_task(self.reconnect())
 
     async def disconnect(self):
+        self.active_disconnect=True
         self.client.disconnect()
         self.log.debug(f"Disconnected: {await self.disconnected}")
+        self.active_disconnect=False
 
 
 class AsyncHABinarySensorPresence():
