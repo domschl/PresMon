@@ -42,12 +42,7 @@ async def run(loop, config):
             if res['cmd']=='ble':
                 devs=res['devs']
                 for dev in devs:
-                    if dev=='8c:dc:d0:37:1a':
-                        name=devs[dev].get('Complete Local Name', 'None')
-                        rssi=devs[dev].get('rssi', -999.0)
-                        print(f"{dev} - {rssi} - {name} - {devs[dev]}")
-                    else:
-                        print(dev)
+                    print(f"{dev} - {devs[dev]}")
                 print()
                 # log.debug(f"BLE: {len(res['devs'])}")
                 notdone=notdone.union((ble.discover(),))
