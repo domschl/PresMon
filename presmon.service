@@ -1,11 +1,12 @@
+# Using presmon.py as systemd service with mouse module causes SEGV crashes.
+# Please set `"mouse": false,` in presmon.json when using services
+
 [Unit]
 Description=Presence Monitor
 After=network.target
 After=network-online.target
 
 [Service]
-User=root
-Group=root
 Type=simple
 WorkingDirectory=/usr/local/bin/presmon
 ExecStart=/usr/bin/python /usr/local/bin/presmon/presmon.py
