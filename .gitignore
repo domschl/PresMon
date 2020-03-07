@@ -1,6 +1,6 @@
 presmon.json
 update.sh
-lsp.log
+*.log
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

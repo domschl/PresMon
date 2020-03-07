@@ -1,5 +1,8 @@
+#!/usr/bin/env python3
+
 import json
 import time
+import os
 import platform
 import logging
 import asyncio
@@ -52,8 +55,12 @@ async def run(loop, config):
                 # log.debug(f"BLE: {len(res['devs'])}")
                 notdone=notdone.union((ble.discover(),))
 
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
 logging.basicConfig(
-       format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG)
+       format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG, filename='presmon.log', filemode='w')
+
 config_file='presmon.json'
 try:
     with open(config_file,'r') as f:

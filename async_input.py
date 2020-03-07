@@ -14,16 +14,14 @@ except:
     use_keyboard=False
 
 try:
-    logging.info("Trying mouse import.")
     import mouse
-    logging.info("mouse imported")
     use_mouse=True
 except:
     use_mouse=False
 
 class AsyncInputEventMonitor():
     '''Async wrapper for `keyboard` module.'''
-    def __init__(self, monitor_keyboard=True, monitor_mouse=True):
+    def __init__(self, monitor_keyboard=True, monitor_mouse=True, mouse_event_throttle=0.2):
         self.log = logging.getLogger("InputMonitor")
         self.loop = asyncio.get_event_loop()
         self.kdb_thread_active = True
@@ -31,6 +29,7 @@ class AsyncInputEventMonitor():
         # self.que=asyncio.Queue()
         self.que=queue.Queue()
         self.threads_active=True
+        self.mouse_event_throttle=mouse_event_throttle
         self.throttle_timer=0
 
         if use_keyboard is False and use_mouse is False:
@@ -45,7 +44,6 @@ class AsyncInputEventMonitor():
         if monitor_mouse is True and use_mouse is False:
             self.log.error('Cannot monitor mouse if python module `mouse` is not installed!')
         if monitor_mouse is True and use_mouse is True:
-            self.log.info('Starting mouse event handler thread.')
             self.kbd_event_thread = threading.Thread(
                 target=self.mouse_background_thread, args=())
         self.kbd_event_thread.setDaemon(True)
@@ -67,9 +65,8 @@ class AsyncInputEventMonitor():
             self.log.error(f"Unlock failed: {e}")
 
     def que_mouse_event(self, event):
-        if time.time()-self.throttle_timer < 0.2:
+        if time.time()-self.throttle_timer < self.mouse_event_throttle:
             return
-        self.log.debug("Mouse-event after throttler.")
         self.throttle_timer=time.time()
         d = event._asdict()
         d['event_class'] = event.__class__.__name__
@@ -91,13 +88,10 @@ class AsyncInputEventMonitor():
             keyboard.wait()
 
     def mouse_background_thread(self):
-        self.log.info('Mouse thread started, enabling hook...')
         mouse.hook(self.que_mouse_event)
-        self.log.info('Hook enabled, starting wait-loop...')
         while self.threads_active is True:
             mouse.wait()
-            self.log.debug('Restarting wait.')
-        self.log.warning('mouse.wait() exited.')
+        self.log.warning('mouse event thread exited.')
 
     async def input(self):
         ev = None
@@ -126,22 +120,22 @@ class AsyncInputPresence():
         self.input_events=AsyncInputEventMonitor(monitor_keyboard=monitor_keyboard, monitor_mouse=monitor_mouse)
         self.state=False
         self.last_time=0
-        if refresh_time is not None and refresh_time!=0:
+        if refresh_time is not None:
             self.refresh_time=refresh_time
         else:
-            self.refresh_time=365*24*3600  # [once a year is almost never]
+            self.refresh_time=0
 
     async def presence(self):
         state_change=False
         while state_change is False:
             try:
                 await asyncio.wait_for(self.input_events.input(), timeout=1)
-                if self.state is False or time.time()-self.last_time > self.refresh_time:
+                if self.state is False or (self.refresh_time > 0 and time.time()-self.last_time > self.refresh_time):
                     self.last_time=time.time()
                     self.state=True
                     state_change=True
             except asyncio.TimeoutError:
-                if (self.state is True and time.time()-self.last_time > self.input_event_timeout) or time.time()-self.last_time > self.refresh_time:
+                if (self.state is True and time.time()-self.last_time > self.input_event_timeout) or (self.refresh_time > 0 and time.time()-self.last_time > self.refresh_time):
                     self.last_time=time.time()
                     self.state=False
                     state_change=True
