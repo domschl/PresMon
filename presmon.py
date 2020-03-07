@@ -4,7 +4,6 @@ import json
 import time
 import os
 import sys
-import psutil
 import platform
 import logging
 import socket
