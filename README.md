@@ -1,7 +1,5 @@
-# PresMon [WIP]
+# PresMon
 Computer presence monitoring via keyboard events and [Home Assistant](https://www.home-assistant.io/) binary_sensor presence integration.
-
-**Work in Progress**
 
 `PresMon` is a python daemon (installable as systemd service) that monitors a computer for input activity, and generates a presence signal. The presence information is publish via MQTT and is then available as binary_sensor within Home Assistant.
 
@@ -50,7 +48,7 @@ Once the script runs, a new binary_sensor can be found in Home Assistant (name: 
 ```
 
 `presmon.py` needs to be executable (`chmod a+x presmon.py`).
-* Create an autostart script (requires the `visudo` entry):
+* Create an autostart script (requires the `visudo` entry in order to run without passwordl-prompt):
 
 ```bash
 #!/bin/bash
