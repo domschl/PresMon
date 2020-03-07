@@ -57,6 +57,17 @@ sudo <full-path-to-script>/presmon.py -f &
 
 and use your desktop environments autostart-feature to start this script on login.
 
+### macOS autostart
+
+For Macs, a few extra things are required:
+
+* Use the macOS automator app to create a new 'Application'.
+* Add 'shell script'
+* Paste and adapt: `sudo <full-path-to-script>/presmon.py -f &`
+* Save your application
+* Use Control Panel Security / Privacy to all your newly created application to 'Accessibility' (which allows the input monitoring).
+* Use Control Panel user administration to add a new startup item, and add the application that was created with automator. And no, it doesn't work to directly start a script with "startup items". The Mac just opens an editor with the script as content on login...
+
 ## Notes
 
 * Windows has not been tested, but might work.
