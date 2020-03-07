@@ -28,7 +28,7 @@ Home Assistant's mqtt auto-discovery is supported, a presence sensor (type binar
 
 ## Installation
 
-Requirements: [`paho-mqtt`](https://pypi.org/project/paho-mqtt/), [`keyboard`](https://pypi.org/project/keyboard/), [`bluepy`](https://github.com/IanHarvey/bluepy) [optional, Linux only]. Since `presmon` needs to run as root, the dependencies must be installed for the root user.
+Requirements: [`paho-mqtt`](https://pypi.org/project/paho-mqtt/), [`keyboard`](https://pypi.org/project/keyboard/), [`bluepy`](https://github.com/IanHarvey/bluepy) [optional, Linux only]. [`mouse`](https://github.com/boppreh/mouse) [optional, Linux, Windows, problems with systemd] Since `presmon` needs to run as root, the dependencies must be installed for the root user.
 
 `presmon` needs to be run as root, either as systemd service, or via
 
@@ -43,6 +43,6 @@ Once the script runs, a new binary_sensor can be found in Home Assistant (name: 
 ## Notes
 
 * Windows has not been tested, but might work.
-* The `keyboard` library on Mac does not generate events for mouse clicks, while the Linux implementation also reacts on mouse clicks, so presence for Mac is only derived from keyboard and for Linux is derived from both keyboard and mouse clicks (but not from mouse movements or scroll-wheel)
+* The `keyboard` library on Linux sometimes registers mouse clicks, depending on context.
 * The mouse lib causes a SEGV crash, if run as service. Cause not yet investigated.
 
