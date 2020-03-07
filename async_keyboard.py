@@ -73,13 +73,13 @@ class AsyncKeyboardPresence():
         state_change=False
         while state_change is False:
             try:
-                await asyncio.wait_for(self.input_events.input(), timeout=self.input_event_timeout)
+                await asyncio.wait_for(self.input_events.input(), timeout=1)
                 if self.state is False or time.time()-self.last_time > self.refresh_time:
                     self.last_time=time.time()
                     self.state=True
                     state_change=True
             except asyncio.TimeoutError:
-                if self.state is True or time.time()-self.last_time > self.refresh_time:
+                if (self.state is True and time.time()-self.last_time > self.input_event_timeout) or time.time()-self.last_time > self.refresh_time:
                     self.last_time=time.time()
                     self.state=False
                     state_change=True
