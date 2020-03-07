@@ -130,12 +130,12 @@ class AsyncInputPresence():
         while state_change is False:
             try:
                 await asyncio.wait_for(self.input_events.input(), timeout=1)
-                if self.state is False or (self.refresh_time > 0 and time.time()-self.last_time > self.refresh_time):
+                if self.state is False or (self.state==True and self.refresh_time > 0 and time.time()-self.last_time > self.refresh_time):
                     self.last_time=time.time()
                     self.state=True
                     state_change=True
             except asyncio.TimeoutError:
-                if (self.state is True and time.time()-self.last_time > self.input_event_timeout) or (self.refresh_time > 0 and time.time()-self.last_time > self.refresh_time):
+                if (self.state is True and time.time()-self.last_time > self.input_event_timeout) or (self.state==False and self.refresh_time > 0 and time.time()-self.last_time > self.refresh_time):
                     self.last_time=time.time()
                     self.state=False
                     state_change=True
