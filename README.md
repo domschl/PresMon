@@ -33,12 +33,31 @@ Requirements: [`paho-mqtt`](https://pypi.org/project/paho-mqtt/), [`keyboard`](h
 `presmon` needs to be run as root, either as systemd service, or via
 
 ```bash
-sudo python presmon.py
+sudo python presmon.py [--help] [-q] [-f]
 ```
 
 Mac: the terminal that runs this script needs Mac OS Catalina 'Accessibility' right, otherwise this will just crash.
 
 Once the script runs, a new binary_sensor can be found in Home Assistant (name: `binary_sensor.<ha_presence_devname>` as configured in `presmon.json`).
+
+### Hints for automatic start
+
+* There seems to be a problem with the `mouse` module and running `presmon.py` as systemd service. The process crashes on mouse events. So only use this with systemd, if the mouse option is set to `false` in `presmon.json`.
+* For Linux, Mac it might be useful to allow `presmon.py` to run with `sudo` without password. That can be achieved by using `visudo` and adding a line: 
+
+```
+<your-username> ALL = NOPASSWD: <full-path-to-script>/presmon.py
+```
+
+`presmon.py` needs to be executable (`chmod a+x presmon.py`).
+* Create an autostart script (requires the `visudo` entry):
+
+```bash
+#!/bin/bash
+sudo <full-path-to-script>/presmon.py -f &
+```
+
+and use your desktop environments autostart-feature to start this script on login.
 
 ## Notes
 
