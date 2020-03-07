@@ -18,7 +18,8 @@ Home Assistant's mqtt auto-discovery is supported, a presence sensor (type binar
 | ------------ | ------- |
 | `"input"` | `true`: Monitor for mouse and/or keyboard input events. On `false`, all input event monitoring is disabled.
 | `"keyboard"` | `true` or `false`. On `true` the python module `keyboard` is required, and a global keyboard hook is installed to generate presence information. |
-| `"mosue"` | `true` or `false`. On `true` the python module `mouse` is required, and a global keyboard hook is installed to generate presence information. The `mouse` module currently doesn't support macOS. Linux and Windows are supported. |
+| `"mouse"` | `true` or `false`. On `true` the python module `mouse` is required, and a global keyboard hook is installed to generate presence information. The `mouse` module currently doesn't support macOS. Linux and Windows are supported. Doesn't
+work with systemd services, TBD. |
 | `"input_timeout"` | Default `180`, number of seconds after the last keyboard/mouse event when presence information is switched to 'absent'. |
 | `"ble"` | Default `false`, on `true` python moduel `bluepy` is required. Functionality NOT YET COMPLETED AND LINUX ONLY. |
 | `"ha_mqtt"` | Default `true`. On `true` python module `paho-mqtt` is required, and presence information is published via mqtt. |
@@ -44,3 +45,5 @@ Once the script runs, a new binary_sensor can be found in Home Assistant (name: 
 
 * Windows has not been tested, but might work.
 * The `keyboard` library on Mac does not generate events for mouse clicks, while the Linux implementation also reacts on mouse clicks, so presence for Mac is only derived from keyboard and for Linux is derived from both keyboard and mouse clicks (but not from mouse movements or scroll-wheel)
+* The mouse lib causes a SEGV crash, if run as service. Cause not yet investigated.
+

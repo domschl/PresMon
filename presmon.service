@@ -2,10 +2,10 @@
 Description=Presence Monitor
 After=network.target
 After=network-online.target
-After=mosquitto.target
-Requires=mosquitto
 
 [Service]
+User=root
+Group=root
 Type=simple
 WorkingDirectory=/usr/local/bin/presmon
 ExecStart=/usr/bin/python /usr/local/bin/presmon/presmon.py

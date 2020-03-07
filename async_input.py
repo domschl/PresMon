@@ -5,6 +5,8 @@ import threading
 import fileinput
 import asyncio
 
+import queue
+
 try:
     import keyboard
     use_keyboard=True
@@ -26,7 +28,8 @@ class AsyncInputEventMonitor():
         self.loop = asyncio.get_event_loop()
         self.kdb_thread_active = True
         self.lock=threading.Lock()  # asyncio.Queue is *not* thread-safe
-        self.que=asyncio.Queue()
+        # self.que=asyncio.Queue()
+        self.que=queue.Queue()
         self.threads_active=True
         self.throttle_timer=0
 
@@ -53,29 +56,34 @@ class AsyncInputEventMonitor():
 
     def que_kdb_event(self, event):
         line = ', '.join(str(code) for code in keyboard._pressed_events)
+        self.lock.acquire()
         try:
-            self.lock.acquire()
             self.que.put_nowait(line)
         except Exception as e:
             self.log.warning(f"Putting event into queue failed: {e}")
-        finally:
+        try:
             self.lock.release()
+        except Exception as e:
+            self.log.error(f"Unlock failed: {e}")
 
     def que_mouse_event(self, event):
         if time.time()-self.throttle_timer < 0.2:
             return
+        self.log.debug("Mouse-event after throttler.")
         self.throttle_timer=time.time()
         d = event._asdict()
         d['event_class'] = event.__class__.__name__
         line=json.dumps(d)
         self.log.debug(line)
+        self.lock.acquire()
         try:
-            self.lock.acquire()
             self.que.put_nowait(line)
         except Exception as e:
             self.log.warning(f"Putting event into queue failed: {e}")
-        finally:
+        try:
             self.lock.release()
+        except Exception as e:
+            self.log.error(f"Unlock failed: {e}")
 
     def kbd_background_thread(self):
         keyboard.hook(self.que_kdb_event)
@@ -88,7 +96,7 @@ class AsyncInputEventMonitor():
         self.log.info('Hook enabled, starting wait-loop...')
         while self.threads_active is True:
             mouse.wait()
-            self.log.info('Restarting wait.')
+            self.log.debug('Restarting wait.')
         self.log.warning('mouse.wait() exited.')
 
     async def input(self):
@@ -99,7 +107,7 @@ class AsyncInputEventMonitor():
                 ev = self.que.get_nowait()
                 self.lock.release()
                 self.que.task_done()
-            except asyncio.QueueEmpty:
+            except:
                 self.lock.release()
                 ev=None
                 await asyncio.sleep(0.1)
