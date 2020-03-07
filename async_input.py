@@ -28,6 +28,7 @@ class AsyncInputEventMonitor():
         self.lock=threading.Lock()  # asyncio.Queue is *not* thread-safe
         self.que=asyncio.Queue()
         self.threads_active=True
+        self.throttle_timer=0
 
         if use_keyboard is False and use_mouse is False:
             self.log.error('This module wont do anything, since neither of the required packages `mouse` and `keyboard` are installed.')
@@ -61,9 +62,13 @@ class AsyncInputEventMonitor():
             self.lock.release()
 
     def que_mouse_event(self, event):
+        if time.time()-self.throttle_timer < 0.2:
+            return
+        self.throttle_timer=time.time()
         d = event._asdict()
         d['event_class'] = event.__class__.__name__
         line=json.dumps(d)
+        self.log.debug(line)
         try:
             self.lock.acquire()
             self.que.put_nowait(line)
