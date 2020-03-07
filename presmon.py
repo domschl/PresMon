@@ -3,8 +3,15 @@
 import json
 import time
 import os
+import sys
+import psutil
 import platform
 import logging
+import socket
+import errno
+import signal 
+import atexit
+import argparse
 import asyncio
 
 
@@ -55,11 +62,48 @@ async def run(loop, config):
                 # log.debug(f"BLE: {len(res['devs'])}")
                 notdone=notdone.union((ble.discover(),))
 
+sock=None
+SOCKET_ADDRESS='./presmon.lock'
+
+def close_socket():
+    global sock
+    global SOCKET_ADDRESS
+    sock.close()
+    os.unlink(SOCKET_ADDRESS)
+
+def signal_handler(sig, frame):
+    sys.exit(0)  # this will implicitly call close_socket()
+
+def check_register_socket(address):
+    global sock 
+    sock = socket.socket(family=socket.AF_UNIX)
+    try:
+        sock.bind(address)
+    except socket.error as e:
+        if getattr(e, 'errno', None) == errno.EADDRINUSE:
+            return False
+        raise
+    atexit.register(close_socket)
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    return True
+
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-q', action='store_true', dest='quiet', help='Check for existing instance without error output.')
+args = parser.parse_args()
+
+if check_register_socket(SOCKET_ADDRESS) is False:
+    if args.quiet is False:
+        print('PresMon is already running, exiting...')
+    sys.exit(-1)
+
 logging.basicConfig(
        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG, filename='presmon.log', filemode='w')
+
 
 config_file='presmon.json'
 try:
