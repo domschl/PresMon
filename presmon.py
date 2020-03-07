@@ -94,12 +94,14 @@ os.chdir(dname)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-q', action='store_true', dest='quiet', help='Check for existing instance without error output.')
+parser.add_argument('-f', action='store_true', dest='force', help='Dont check for existing instances, ignore lock.')
 args = parser.parse_args()
 
 if check_register_socket(SOCKET_ADDRESS) is False:
-    if args.quiet is False:
-        print('PresMon is already running, exiting...')
-    sys.exit(-1)
+    if args.force is False:
+        if args.quiet is False:
+            print('PresMon is already running, exiting...')
+        sys.exit(-1)
 
 logging.basicConfig(
        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG, filename='presmon.log', filemode='w')
