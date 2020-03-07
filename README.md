@@ -48,7 +48,7 @@ Once the script runs, a new binary_sensor can be found in Home Assistant (name: 
 ```
 
 `presmon.py` needs to be executable (`chmod a+x presmon.py`).
-* Create an autostart script (requires the `visudo` entry):
+* Create an autostart script (requires the `visudo` entry in order to run without passwordl-prompt):
 
 ```bash
 #!/bin/bash
