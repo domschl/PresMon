@@ -61,6 +61,7 @@ and use your desktop environments autostart-feature to start this script on logi
 
 For Macs, a few extra things are required:
 
+* Make the `visudo` configurations described above.
 * Use the macOS automator app to create a new 'Application'.
 * Add 'shell script'
 * Paste and adapt: `sudo <full-path-to-script>/presmon.py -f &`
