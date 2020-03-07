@@ -206,6 +206,8 @@ class AsyncHABinarySensorPresence():
 
     def set_state(self, state):
         if state is True:
+            self.log.debug('Publishing `on` state.')
             self.mqtt.publish(self.state_topic, "on", retain=True)
         else:
+            self.log.debug('Publishing `off` state.')
             self.mqtt.publish(self.state_topic, "off", retain=True)

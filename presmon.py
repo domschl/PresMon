@@ -1,5 +1,6 @@
 import json
 import time
+import platform
 import logging
 import asyncio
 
@@ -7,9 +8,13 @@ import asyncio
 async def run(loop, config):
     log=logging.getLogger("runLoop")
     tasks=[]
-    if config.get('keyboard', False):
-        timeout=config.get('keyboard_timeout',180)
-        te=AsyncInputPresence(timeout=timeout)
+    if config.get('input', True):
+        timeout=config.get('input_timeout',180)
+        if 'Darwin' in platform.platform():
+            mouse_default=False
+        else:
+            mouse_default=True
+        te=AsyncInputPresence(config.get('keyboard', True), config.get('mouse', mouse_default), timeout=timeout)
         tasks+=[te.presence()]
     else:
         te=None
@@ -55,7 +60,7 @@ try:
         config=json.load(f)
 except Exception as e:
     logging.warning(f"Couldn't read {config_file}, {e}")
-if config.get('keyboard', False):
+if config.get('input', False):
     from async_input import AsyncInputPresence
 if config.get('ble', False):
     from async_ble import AsyncBLEPresence

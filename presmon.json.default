@@ -1,6 +1,8 @@
 {
+    "input": true,
     "keyboard": true,
-    "keyboard_timeout": 300,
+    "mouse": true,
+    "input_timeout": 300,
     "ble": false,
     "ha_mqtt": true,
     "ha_presence_devname": "my-computer-name-presence",
