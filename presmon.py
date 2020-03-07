@@ -9,7 +9,7 @@ async def run(loop, config):
     tasks=[]
     if config.get('keyboard', False):
         timeout=config.get('keyboard_timeout',180)
-        te=AsyncKeyboardPresence(timeout=timeout)
+        te=AsyncInputPresence(timeout=timeout)
         tasks+=[te.presence()]
     else:
         te=None
@@ -56,7 +56,7 @@ try:
 except Exception as e:
     logging.warning(f"Couldn't read {config_file}, {e}")
 if config.get('keyboard', False):
-    from async_keyboard import AsyncKeyboardPresence
+    from async_input import AsyncInputPresence
 if config.get('ble', False):
     from async_ble import AsyncBLEPresence
 if config.get('ha_mqtt', False):

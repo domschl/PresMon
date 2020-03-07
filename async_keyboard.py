@@ -5,18 +5,37 @@ import threading
 import fileinput
 import asyncio
 
-import keyboard
+try:
+    import keyboard
+    use_keyboard=True
+except:
+    use_keyboard=False
+
+try:
+    import mouse
+    use_mouse=True
+except:
+    use_mouse=False
 
 class AsyncInputEventMonitor():
     '''Async wrapper for `keyboard` module.'''
-    def __init__(self):
+    def __init__(self, monitor_keyboard=True, monitor_mouse=True):
         self.log = logging.getLogger("InputMonitor")
         self.loop = asyncio.get_event_loop()
         self.kdb_thread_active = True
         self.lock=threading.Lock()  # asyncio.Queue is *not* thread-safe
         self.que=asyncio.Queue()
-        self.kbd_event_thread = threading.Thread(
-            target=self.background_thread, args=())
+
+        if use_keyboard is False and use_mouse is False:
+            self.log.error('This module wont do anything, since neither of the required packages `mouse` and `keyboard` are installed.')
+        if monitor_keyboard is False and monitor_mouse is False:
+            self.log.warning('All monitoring is disabled!')
+        if monitor_keyboard is True and use_keyboard is True:
+            self.kbd_event_thread = threading.Thread(
+                target=self.kbd_background_thread, args=())
+        if monitor_mouse is True and use_mouse is True:
+            self.kbd_event_thread = threading.Thread(
+                target=self.mouse_background_thread, args=())
         self.kbd_event_thread.setDaemon(True)
         self.kbd_event_thread.start()
         
@@ -33,9 +52,13 @@ class AsyncInputEventMonitor():
         finally:
             self.lock.release()
 
-    def background_thread(self):
+    def kbd_background_thread(self):
         keyboard.hook(self.que_event)
         keyboard.wait()
+
+    def mouse_background_thread(self):
+        mouse.hook(self.que_event)
+        mouse.wait()
 
     async def input(self):
         ev = None
@@ -53,8 +76,8 @@ class AsyncInputEventMonitor():
             'ev': ev}
         return xev
 
-class AsyncKeyboardPresence():
-    '''Generates a presence state by monitoring keyboard events.
+class AsyncInputPresence():
+    '''Generates a presence state by monitoring keyboard and/or mouse events.
     
     Considers presence state `away` if no input events for `timeout` seconds. Generate
     a presence event at least every `refresh_time` seconds, even if state hasn't changed.'''
