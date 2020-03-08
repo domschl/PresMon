@@ -2,6 +2,7 @@ start.sh
 presmon.json
 update.sh
 *.log
+test.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
