@@ -23,7 +23,7 @@ async def run(loop, config):
             mouse_default=False
         else:
             mouse_default=True
-        te=AsyncInputPresence(config.get('keyboard', True), config.get('mouse', mouse_default), timeout=timeout)
+        te=AsyncInputPresence(config.get('keyboard', True), config.get('mouse', mouse_default), config.get('hotkeys',[]), timeout=timeout)
         tasks+=[te.presence()]
     else:
         te=None
@@ -53,6 +53,9 @@ async def run(loop, config):
                 else:
                     log.debug("Absent!")
                     hamq.set_state(False)
+            if res['cmd']=='hotkey':
+                notdone=notdone.union((te.presence(),))
+                log.debug(f"Hot: {res['hotkey']}")
             if res['cmd']=='ble':
                 devs=res['devs']
                 for dev in devs:

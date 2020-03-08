@@ -21,7 +21,7 @@ except:
 
 class AsyncInputEventMonitor():
     '''Async wrapper for `keyboard` module.'''
-    def __init__(self, monitor_keyboard=True, monitor_mouse=True, mouse_event_throttle=0.2):
+    def __init__(self, monitor_keyboard=True, monitor_mouse=True, hotkeys=[], mouse_event_throttle=0.5):
         self.log = logging.getLogger("InputMonitor")
         self.loop = asyncio.get_event_loop()
         self.kdb_thread_active = True
@@ -31,32 +31,36 @@ class AsyncInputEventMonitor():
         self.threads_active=True
         self.mouse_event_throttle=mouse_event_throttle
         self.throttle_timer=0
+        self.hotkeys=hotkeys
 
         if use_keyboard is False and use_mouse is False:
             self.log.error('This module wont do anything, since neither of the required packages `mouse` and `keyboard` are installed.')
         if monitor_keyboard is False and monitor_mouse is False:
             self.log.warning('All monitoring is disabled!')
+        if monitor_keyboard is True and use_keyboard is False:
+            self.log.error('Cannot monitor keyboard if python module `keyboard` is not installed!')
         if monitor_keyboard is True and use_keyboard is True:
             self.kbd_event_thread = threading.Thread(
                 target=self.kbd_background_thread, args=())
-        if monitor_keyboard is True and use_keyboard is False:
-            self.log.error('Cannot monitor keyboard if python module `keyboard` is not installed!')
+            self.kbd_event_thread.setDaemon(True)
+            self.kbd_event_thread.start()
         if monitor_mouse is True and use_mouse is False:
             self.log.error('Cannot monitor mouse if python module `mouse` is not installed!')
         if monitor_mouse is True and use_mouse is True:
-            self.kbd_event_thread = threading.Thread(
+            self.mouse_event_thread = threading.Thread(
                 target=self.mouse_background_thread, args=())
-        self.kbd_event_thread.setDaemon(True)
-        self.kbd_event_thread.start()
+            self.mouse_event_thread.setDaemon(True)
+            self.mouse_event_thread.start()
         
 #     def send_event_json(self, event):
 #        self.que_event(event)
 
     def que_kdb_event(self, event):
         line = ', '.join(str(code) for code in keyboard._pressed_events)
+        ev={"event_type": "key", "keys": line}
         self.lock.acquire()
         try:
-            self.que.put_nowait(line)
+            self.que.put_nowait(ev)
         except Exception as e:
             self.log.warning(f"Putting event into queue failed: {e}")
         try:
@@ -68,13 +72,27 @@ class AsyncInputEventMonitor():
         if time.time()-self.throttle_timer < self.mouse_event_throttle:
             return
         self.throttle_timer=time.time()
-        d = event._asdict()
-        d['event_class'] = event.__class__.__name__
-        line=json.dumps(d)
+        ev = event._asdict()
+        ev['event_class'] = event.__class__.__name__
+        ev['event_type'] = 'mouse'
+        line=json.dumps(ev)
         self.log.debug(line)
         self.lock.acquire()
         try:
-            self.que.put_nowait(line)
+            self.que.put_nowait(ev)
+        except Exception as e:
+            self.log.warning(f"Putting event into queue failed: {e}")
+        try:
+            self.lock.release()
+        except Exception as e:
+            self.log.error(f"Unlock failed: {e}")
+
+    def que_hotkey_event(self, hotkey):
+        ev={"event_type": "hotkey", "hotkey": hotkey}
+        self.log.debug(ev)
+        self.lock.acquire()
+        try:
+            self.que.put_nowait(ev)
         except Exception as e:
             self.log.warning(f"Putting event into queue failed: {e}")
         try:
@@ -84,6 +102,9 @@ class AsyncInputEventMonitor():
 
     def kbd_background_thread(self):
         keyboard.hook(self.que_kdb_event)
+        for hotkey in self.hotkeys:
+            self.log.debug(f"Adding hotkey hook for {hotkey}")
+            keyboard.add_hotkey(hotkey, self.que_hotkey_event, args=(hotkey,))
         while self.threads_active is True:
             keyboard.wait()
 
@@ -106,7 +127,7 @@ class AsyncInputEventMonitor():
                 ev=None
                 await asyncio.sleep(0.1)
         xev={'cmd': 'input',
-            'ev': ev}
+            'event': ev}
         return xev
 
 class AsyncInputPresence():
@@ -114,10 +135,10 @@ class AsyncInputPresence():
     
     Considers presence state `away` if no input events for `timeout` seconds. Generate
     a presence event at least every `refresh_time` seconds, even if state hasn't changed.'''
-    def __init__(self, monitor_keyboard, monitor_mouse, timeout=300, refresh_time=60):
+    def __init__(self, monitor_keyboard, monitor_mouse, hotkeys, timeout=300, refresh_time=60):
         self.log = logging.getLogger("KeyboardPresence")
         self.input_event_timeout=timeout
-        self.input_events=AsyncInputEventMonitor(monitor_keyboard=monitor_keyboard, monitor_mouse=monitor_mouse)
+        self.input_events=AsyncInputEventMonitor(monitor_keyboard=monitor_keyboard, monitor_mouse=monitor_mouse, hotkeys=hotkeys)
         self.state=False
         self.last_time=0
         if refresh_time is not None:
@@ -129,16 +150,23 @@ class AsyncInputPresence():
         state_change=False
         while state_change is False:
             try:
-                await asyncio.wait_for(self.input_events.input(), timeout=1)
+                result = await asyncio.wait_for(self.input_events.input(), timeout=1)
                 if self.state is False or (self.state==True and self.refresh_time > 0 and time.time()-self.last_time > self.refresh_time):
                     self.last_time=time.time()
                     self.state=True
                     state_change=True
+                    xstate={'cmd': 'presence',
+                            'state': self.state}
+                if result['event']['event_type']=="hotkey":
+                    self.log.debug(f"Hotkey: {result['event']['hotkey']}")
+                    state_change=True
+                    xstate={'cmd': 'hotkey',
+                            'hotkey': result['event']['hotkey']}
             except asyncio.TimeoutError:
                 if (self.state is True and time.time()-self.last_time > self.input_event_timeout) or (self.state==False and self.refresh_time > 0 and time.time()-self.last_time > self.refresh_time):
                     self.last_time=time.time()
                     self.state=False
                     state_change=True
-        xstate={'cmd': 'presence',
-        'state': self.state}
+                    xstate={'cmd': 'presence',
+                            'state': self.state}
         return xstate                    
