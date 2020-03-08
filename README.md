@@ -58,22 +58,31 @@ sudo <full-path-to-script>/presmon.py -f &
 and use your desktop environments autostart-feature to start this script on login.
 
 ### macOS autostart
-t.b.d.
-<!--
-***
+
 For Macs, a few extra things are required:
 
-* Make the `visudo` configurations described above.
+* Use `sudo visudo` to insert (replace username and path) after line `%admin      ALL = (ALL) ALL`:
+
+```
+<your-username> ALL=(ALL)  NOPASSWD: /<full-path-to-script>/presmon.py
+```
+
+* Make sure `presmon.py` is executable (`chmod a+x presmon.py`)
+* Automator will use Catalina's system `/usr/bin/python3`. So the dependencies (`paho-mqtt`, `keyboard`) need
+to be installed for the system python (using `sudo /usr/bin/pip3 install paho-mqtt keyboard`)
 * Use the macOS automator app to create a new 'Application'.
 * Add 'shell script'
-* Paste and adapt: `sudo <full-path-to-script>/presmon.py -f &`
+* Paste and adapt: `sudo /<full-path-to-script>/presmon.py -f &>/dev/null &`. The redirection of the output suppresses the eternally spinning gear of Automator.
+
+<img src="https://github.com/domschl/PresMon/blob/master/Resources/Automator.png" width="480" />
+
 * Save your application
-* Use Control Panel Security / Privacy to all your newly created application to 'Accessibility' (which allows the input monitoring).
-* Use Control Panel user administration to add a new startup item, and add the application that was created with automator. And no, it doesn't work to directly start a script with "startup items". The Mac just opens an editor with the script as content on login...
--->
+* Use Control Panel Security / Privacy to add your newly created Automator application to 'Accessibility' (which allows the input monitoring).
+* Use Control Panel user administration to add a new startup item, and add the application that was created with automator. 
+
 ## Notes
 
 * Windows has not been tested, but might work.
 * The `keyboard` library on Linux sometimes registers mouse clicks, depending on context.
-* The mouse lib causes a SEGV crash, if run as service. Cause not yet investigated.
+* The mouse lib causes a SEGV crash, if run as systemd service. Cause not yet investigated. Works fine, if started via autostart.
 
