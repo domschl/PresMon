@@ -64,11 +64,13 @@ async def run(loop, config, args):
     if mqtt_config['active'] is True:
         from async_mqtt import AsyncMqtt
         mqtt = AsyncMqtt(loop, mqtt_config['broker'])
-        await mqtt.initial_connect()
         if ha_config['active'] is True:
             from async_homeassistant import AsyncHABinarySensorPresence
-            hamq=AsyncHABinarySensorPresence(loop, mqtt, ha_config['presence_name'])
+            hamq=AsyncHABinarySensorPresence(loop, mqtt, ha_config['presence_name'], True, ha_config['discovery_prefix'])
             mqtt.last_will(hamq.last_will_topic, hamq.last_will_message)
+        await mqtt.initial_connect()  # Needs to happen after last_will is set.
+        if ha_config['active'] is True:
+            hamq.register_auto_discovery()
     else:
         hamq=None
 
@@ -116,11 +118,10 @@ yaml_file='presmon.yaml'
 try:
     with open(yaml_file,'r') as f:
         config=yaml.load(f, Loader=yaml.SafeLoader)
-    with open(config_file,'w') as f:
-        json.dump(config,f)
-        logging.warning("testcode yaml")
 except Exception as e:
     logging.warning(f"Couldn't read {config_file}, {e}")
+    print(f"Start failed, invalid YAML config file {e}")
+    exit(0)
 
 
 

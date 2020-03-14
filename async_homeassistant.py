@@ -33,9 +33,9 @@ class AsyncHABinarySensorPresence():
 
         self.state_topic=f"{name}/presence/state"
         if homeassistant_discovery is True:
-            discovery_topic=f"{homeassistant_discovery_prefix}/binary_sensor/presence-{name}/config"
+            self.discovery_topic=f"{homeassistant_discovery_prefix}/binary_sensor/presence-{name}/config"
             # avail_topic=f"{name}/presence/available"
-            discovery_payload=json.dumps({
+            self.discovery_payload=json.dumps({
                 "name": name,
                 "unique_id": self.uuid,
                 "device_class": "presence",
@@ -46,9 +46,11 @@ class AsyncHABinarySensorPresence():
             })
         self.last_will_topic=self.state_topic
         self.last_will_message="off"
+        # mqtt.last_will(self.last_will_topic, self.last_will_message)
         
-        if homeassistant_discovery is True:
-            self.mqtt.publish(discovery_topic, discovery_payload, retain=True)
+    def register_auto_discovery(self):
+        if self.homeassistant_discovery is True:
+            self.mqtt.publish(self.discovery_topic, self.discovery_payload, retain=True)
 
     def set_state(self, state):
         if state is True:
