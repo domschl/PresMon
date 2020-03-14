@@ -63,20 +63,17 @@ class AsyncSignalServer:
             
             self.log.debug(f'Received: {data.decode()!r}')
             if 'quitting' in data.decode():
+                print('Other instance did terminate.')
                 self.log.info("Old instance terminated.")
             if self.args.kill_daemon is True:
-                print("Aborting after sending KILL signal")
+                print("Exiting after quitting other instance.")
                 exit(0)
         except Exception as e:
             self.log.debug(f"Reading from socket failed: {e}")
 
         try:
-            # self.server = self.loop.create_task(asyncio.start_server(self.handle_client, 'localhost', self.port))
             self.server = await asyncio.start_server(self.handle_client, 'localhost', self.port)
         except Exception as e:
-            # if getattr(e, 'errno', None) == errno.EADDRINUSE:
-            #     self.log.info(f"Server already runnning.")
-            #     return None
             self.log.warning(f"Can't open server at port {self.port}: {e}")
             return None
 
@@ -84,6 +81,3 @@ class AsyncSignalServer:
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
         return self.server
-
-
-

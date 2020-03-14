@@ -106,29 +106,32 @@ async def main_runner(config, args):
                 log.warning('Received quit command.')
                 esc=True
 
-abspath = os.path.abspath(__file__)
-dname = os.path.dirname(abspath)
-os.chdir(dname)
+def read_config_arguments():
+    abspath = os.path.abspath(__file__)
+    dname = os.path.dirname(abspath)
+    os.chdir(dname)
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-k', action='store_true', dest='kill_daemon', help='Kill existing instance and terminate.')
-parser.add_argument('-f', action='store_true', dest='obsolete option', help='Does nothing anymore, since replacing existing daemons is now automatic.')
-args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-k', action='store_true', dest='kill_daemon', help='Kill existing instance and terminate.')
+    parser.add_argument('-f', action='store_true', dest='obsolete option', help='Does nothing anymore, since replacing existing daemons is now automatic.')
+    args = parser.parse_args()
 
-logging.basicConfig(
-       format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG, filename='presmon.log', filemode='w')
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG, filename='presmon.log', filemode='w')
 
-yaml_file='presmon.yaml'
-try:
-    with open(yaml_file,'r') as f:
-        config=yaml.load(f, Loader=yaml.SafeLoader)
-except Exception as e:
-    logging.warning(f"Couldn't read {config_file}, {e}")
-    print(f"Start failed, invalid YAML config file {e}")
-    exit(0)
+    yaml_file='presmon.yaml'
+    try:
+        with open(yaml_file,'r') as f:
+            config=yaml.load(f, Loader=yaml.SafeLoader)
+    except Exception as e:
+        logging.warning(f"Couldn't read {config_file}, {e}")
+        print(f"Start failed, invalid YAML config file {e}")
+        exit(0)
+    return config, args
 
 
 
+config, args = read_config_arguments()
 esc=False
 try:
     asyncio.run(main_runner(config, args), debug=True)
