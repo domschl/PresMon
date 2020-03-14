@@ -68,7 +68,7 @@ async def main_runner(config, args):
         mqtt = AsyncMqtt(loop, mqtt_config['broker'])
         if ha_config['active'] is True:
             from async_homeassistant import AsyncHABinarySensorPresence
-            hamq=AsyncHABinarySensorPresence(loop, mqtt, ha_config['presence_name'], True, ha_config['discovery_prefix'])
+            hamq=AsyncHABinarySensorPresence(loop, mqtt, ha_config['presence_name'], ha_config['discovery_prefix'])
             mqtt.last_will(hamq.last_will_topic, hamq.last_will_message)
         await mqtt.initial_connect()  # Needs to happen after last_will is set.
         if ha_config['active'] is True:
@@ -93,8 +93,12 @@ async def main_runner(config, args):
                     log.debug("Presence state: absent!")
                     hamq.set_state(False)
             if res['cmd']=='hotkey':
+                print(f"Hotkey-result {res}")
                 notdone=notdone.union((te.presence(),))
-                log.debug(f"Hot: {res['hotkey']}")
+                if res['state'] is True:
+                    log.debug(f"Hot: {res['hotkey']} ON")
+                else:
+                    log.debug(f"Hot: {res['hotkey']} OFF")
             if res['cmd']=='ble':
                 devs=res['devs']
                 for dev in devs:

@@ -14,7 +14,8 @@ import yaml
 
 
 class AsyncSignalServer:
- 
+    """ Check if another instance is already running using a socket server. Terminate old instance and
+    start new instance (if kill option was not set.) """
     def __init__(self, loop, config, args, port=17345):
         self.log=logging.getLogger("SigServer")
         self.port=port

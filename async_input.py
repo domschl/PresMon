@@ -20,18 +20,18 @@ except:
     use_mouse=False
 
 class AsyncInputEventMonitor():
-    '''Async wrapper for `keyboard` module.'''
-    def __init__(self, monitor_keyboard=True, monitor_mouse=True, hotkeys=[], mouse_event_throttle=0.5):
+    '''Async wrapper for `keyboard` and `mouse` modules.'''
+    def __init__(self, monitor_keyboard=True, monitor_mouse=True, hotkeys=[], mouse_event_throttle=0.5, min_key_pressed_duration=1.0):
         self.log = logging.getLogger("InputMonitor")
         self.loop = asyncio.get_event_loop()
         self.kdb_thread_active = True
         self.lock=threading.Lock()  # asyncio.Queue is *not* thread-safe
-        # self.que=asyncio.Queue()
         self.que=queue.Queue()
         self.threads_active=True
         self.mouse_event_throttle=mouse_event_throttle
         self.throttle_timer=0
         self.hotkeys=hotkeys
+        self.min_key_pressed_duration=min_key_pressed_duration
 
         if use_keyboard is False and use_mouse is False:
             self.log.error('This module wont do anything, since neither of the required packages `mouse` and `keyboard` are installed.')
@@ -40,10 +40,17 @@ class AsyncInputEventMonitor():
         if monitor_keyboard is True and use_keyboard is False:
             self.log.error('Cannot monitor keyboard if python module `keyboard` is not installed!')
         if monitor_keyboard is True and use_keyboard is True:
+            self.hotkey_state={}
             self.kbd_event_thread = threading.Thread(
                 target=self.kbd_background_thread, args=())
             self.kbd_event_thread.setDaemon(True)
             self.kbd_event_thread.start()
+            # Workarounds for broken key-release:
+            time.sleep(0.05)
+            self.broken_kbd_release_event_thread = threading.Thread(
+                target=self.kbd_release_background_thread, args=())
+            self.broken_kbd_release_event_thread.setDaemon(True)
+            self.broken_kbd_release_event_thread.start()
         if monitor_mouse is True and use_mouse is False:
             self.log.error('Cannot monitor mouse if python module `mouse` is not installed!')
         if monitor_mouse is True and use_mouse is True:
@@ -52,9 +59,6 @@ class AsyncInputEventMonitor():
             self.mouse_event_thread.setDaemon(True)
             self.mouse_event_thread.start()
         
-#     def send_event_json(self, event):
-#        self.que_event(event)
-
     def que_kdb_event(self, event):
         line = ', '.join(str(code) for code in keyboard._pressed_events)
         ev={"event_type": "key", "keys": line}
@@ -87,8 +91,16 @@ class AsyncInputEventMonitor():
         except Exception as e:
             self.log.error(f"Unlock failed: {e}")
 
-    def que_hotkey_event(self, hotkey):
-        ev={"event_type": "hotkey", "hotkey": hotkey}
+    def que_hotkey_event(self, hotkey, state):
+        if state is True:
+            # Workround for broken key-release-event and repeat-ignore:
+            if time.time() - self.hotkey_state[hotkey]['last_pressed'] < self.min_key_pressed_duration and self.hotkey_state[hotkey]['pressed'] is True:
+                self.hotkey_state[hotkey]['last_pressed']=time.time()
+                return
+        ev={"event_type": "hotkey", "hotkey": hotkey, "state": state}
+        if state is True:
+            self.hotkey_state[hotkey]['last_pressed']=time.time()
+            self.hotkey_state[hotkey]['pressed']=state
         self.log.debug(ev)
         self.lock.acquire()
         try:
@@ -100,11 +112,29 @@ class AsyncInputEventMonitor():
         except Exception as e:
             self.log.error(f"Unlock failed: {e}")
 
+    # def que_hotkey_event_end(self, hotkey, state):   ## broken in keyboard lib.
+    #     print(f"RELEASE {hotkey}")
+    #     self.que_hotkey_event(hotkey, state)
+
+    # Key-Release-Bug work-around thread:
+    def kbd_release_background_thread(self):
+        while self.threads_active is True:
+            for hotkey in self.hotkey_state:
+                if time.time() - self.hotkey_state[hotkey]['last_pressed'] > self.min_key_pressed_duration and self.hotkey_state[hotkey]['pressed'] is True:
+                    self.hotkey_state[hotkey]['last_pressed']=0
+                    self.hotkey_state[hotkey]['pressed']=False
+                    self.que_hotkey_event(hotkey, False)
+            time.sleep(0.1)
+
     def kbd_background_thread(self):
         keyboard.hook(self.que_kdb_event)
         for hotkey in self.hotkeys:
             self.log.debug(f"Adding hotkey hook for {hotkey}")
-            keyboard.add_hotkey(hotkey, self.que_hotkey_event, args=(hotkey,))
+            self.hotkey_state[hotkey]={'last_pressed': 0, 'pressed': False}
+            keyboard.add_hotkey(hotkey, self.que_hotkey_event, args=(hotkey, True))
+            # Unfortunately trigger_on_release seems broken: https://github.com/boppreh/keyboard/issues/178
+            # keyboard.add_hotkey(hotkey, self.que_hotkey_event_end, args=(hotkey, False), trigger_on_release=True)
+
         while self.threads_active is True:
             keyboard.wait()
 
@@ -161,7 +191,7 @@ class AsyncInputPresence():
                     self.log.debug(f"Hotkey: {result['event']['hotkey']}")
                     state_change=True
                     xstate={'cmd': 'hotkey',
-                            'hotkey': result['event']['hotkey']}
+                            'hotkey': result['event']['hotkey'], 'state': result['event']['state']}
             except asyncio.TimeoutError:
                 if (self.state is True and time.time()-self.last_time > self.input_event_timeout) or (self.state==False and self.refresh_time > 0 and time.time()-self.last_time > self.refresh_time):
                     self.last_time=time.time()
