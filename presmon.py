@@ -124,8 +124,8 @@ def read_config_arguments():
         with open(yaml_file,'r') as f:
             config=yaml.load(f, Loader=yaml.SafeLoader)
     except Exception as e:
-        logging.warning(f"Couldn't read {config_file}, {e}")
-        print(f"Start failed, invalid YAML config file {e}")
+        logging.warning(f"Couldn't read {yaml_file}, {e}")
+        print(f"Start failed, invalid YAML config file {yaml_file}: {e}")
         exit(0)
     return config, args
 
