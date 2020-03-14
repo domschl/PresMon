@@ -1,0 +1,37 @@
+bluetooth_le:
+  # Bluetooth is not yet useful, keep to false (on linux, BLE discovery is available, but does nothing)
+  active: false
+
+server:
+  # This is the local server that reacts to termination signals (e.g. Ctrl-C)
+  active: true
+
+mqtt:
+  # Connection to MQTT server
+  active: true
+  # Hostname of MQTT server
+  broker: mqtt-server-hostname
+
+homeassistant:
+  # On active, use MQTT to publish presence information and generate a presence device with MQTT auto-discovery
+  active: true
+  # Name of the presence entity in home assistant
+  presence_name: entity-name-in-home-assistant
+  # Prefix for auto-discovery messages, leave to default unless you have multiple HA servers. (See HA auto-discovery)
+  discovery_prefix: homeassistant
+
+input:
+  # On active, input is monitored for generation of input signals
+  active: true
+  # Timeout after last input event that causes presence signal to go to state absent
+  timeout: 10
+  # Monitor keyboard for input signals (requires root, all platforms)
+  keyboard: true
+  # Monitor mouse movements for input signals. Not supported on MACs, see: https://github.com/boppreh/mouse
+  mouse: true
+  # Hotkey support, each hotkey generates a MQTT device trigger: https://www.home-assistant.io/integrations/device_trigger.mqtt/
+  # For hotkey encoding, see: https://github.com/boppreh/keyboard
+  # NOT YET AVAILABLE!
+  hotkeys:
+  - ctrl+pause
+  - ctrl+scroll lock

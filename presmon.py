@@ -12,28 +12,62 @@ import signal
 import atexit
 import argparse
 import asyncio
+import yaml
 
 
-async def run(loop, config):
+async def run(loop, config, args):
     log=logging.getLogger("runLoop")
     tasks=[]
-    if config.get('input', True):
-        timeout=config.get('input_timeout',180)
+    try:
+        input_config=config['input']
+    except:
+        input_config={'active': False}
+    try:
+        btle_config=config['bluetooth_le']
+    except:
+        btle_config={'active': False}
+    try:
+        mqtt_config=config['mqtt']
+    except:
+        mqtt_config={'active': False}
+    try:
+        ha_config=config['homeassistant']
+    except:
+        ha_config={'active': False}
+    try:
+        server_config=config['server']
+    except:
+        server_config={'active': False}
+
+    if server_config['active'] is True:
+        from async_server import AsyncSignalServer
+        ass=AsyncSignalServer(loop, config, args)
+
+    if input_config['active'] is True:
+        from async_input import AsyncInputPresence
+        timeout=input_config['timeout']
         if 'Darwin' in platform.platform():
-            mouse_default=False
+            mouse_active=False
         else:
-            mouse_default=True
-        te=AsyncInputPresence(config.get('keyboard', True), config.get('mouse', mouse_default), config.get('hotkeys',[]), timeout=timeout)
+            mouse_active=input_config['mouse']
+        te=AsyncInputPresence(input_config['keyboard'], mouse_active, input_config['hotkeys'], timeout=timeout)
         tasks+=[te.presence()]
     else:
         te=None
-    if config.get('ble', False):
+    if btle_config['active'] is True:
+        from async_ble import AsyncBLEPresence
         ble=AsyncBLEPresence(timeout=10)
         tasks+=[ble.discover()]
     else:
         ble=None
-    if config.get('ha_mqtt', False):
-        hamq=AsyncHABinarySensorPresence(loop, config['mqtt_server'],config['ha_presence_devname'])
+    if mqtt_config['active'] is True:
+        from async_mqtt import AsyncMqtt
+        mqtt = AsyncMqtt(loop, mqtt_config['broker'])
+        await mqtt.initial_connect()
+        if ha_config['active'] is True:
+            from async_homeassistant import AsyncHABinarySensorPresence
+            hamq=AsyncHABinarySensorPresence(loop, mqtt, ha_config['presence_name'])
+            mqtt.last_will(hamq.last_will_topic, hamq.last_will_message)
     else:
         hamq=None
 
@@ -64,32 +98,6 @@ async def run(loop, config):
                 # log.debug(f"BLE: {len(res['devs'])}")
                 notdone=notdone.union((ble.discover(),))
 
-sock=None
-SOCKET_ADDRESS='./presmon.lock'
-
-def close_socket():
-    global sock
-    global SOCKET_ADDRESS
-    sock.close()
-    os.unlink(SOCKET_ADDRESS)
-
-def signal_handler(sig, frame):
-    sys.exit(0)  # this will implicitly call close_socket()
-
-def check_register_socket(address):
-    global sock 
-    sock = socket.socket(family=socket.AF_UNIX)
-    try:
-        sock.bind(address)
-    except socket.error as e:
-        if getattr(e, 'errno', None) == errno.EADDRINUSE:
-            return False
-        raise
-    atexit.register(close_socket)
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
-    return True
-
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
@@ -99,31 +107,24 @@ parser.add_argument('-q', action='store_true', dest='quiet', help='Check for exi
 parser.add_argument('-f', action='store_true', dest='force', help='Dont check for existing instances, ignore lock.')
 args = parser.parse_args()
 
-if check_register_socket(SOCKET_ADDRESS) is False:
-    if args.force is False:
-        if args.quiet is False:
-            print('PresMon is already running, exiting...')
-        sys.exit(-1)
-
 logging.basicConfig(
        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG, filename='presmon.log', filemode='w')
 
-
 config_file='presmon.json'
+yaml_file='presmon.yaml'
 try:
-    with open(config_file,'r') as f:
-        config=json.load(f)
+    with open(yaml_file,'r') as f:
+        config=yaml.load(f, Loader=yaml.SafeLoader)
+    with open(config_file,'w') as f:
+        json.dump(config,f)
+        logging.warning("testcode yaml")
 except Exception as e:
     logging.warning(f"Couldn't read {config_file}, {e}")
-if config.get('input', False):
-    from async_input import AsyncInputPresence
-if config.get('ble', False):
-    from async_ble import AsyncBLEPresence
-if config.get('ha_mqtt', False):
-    from async_ha_mqtt import AsyncHABinarySensorPresence
+
+
 
 esc=False
 try:
-    asyncio.run(run(asyncio.get_event_loop(), config), debug=True)
+    asyncio.run(run(asyncio.get_event_loop(), config, args), debug=True)
 except KeyboardInterrupt:
     esc=True

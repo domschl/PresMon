@@ -6,26 +6,18 @@ Computer presence monitoring via keyboard events and [Home Assistant](https://ww
 
 `PresMon` is a python daemon (installable as systemd service) that monitors a computer for input activity, and generates a presence signal. The presence information is publish via MQTT and is then available as binary_sensor within Home Assistant.
 
-Home Assistant's mqtt auto-discovery is supported, a presence sensor (type binary_sensor, device_class presence)`binary_sensor.<ha_presence_devname>` is automatically generated in Home Assistant. The name can be configured in the config file `presmon.json`, s.b.
+Home Assistant's mqtt auto-discovery is supported, a presence sensor (type binary_sensor, device_class presence)`binary_sensor.<ha_presence_devname>` is automatically generated in Home Assistant. The name can be configured in the config file `presmon.yaml`, s.b.
 
 ## Configuration
 
-* Copy `presmon.json.default` to `presmon.json` and customize.
+* Copy `presmon-default.yaml` to `presmon.yaml` and customize.
 * For systemd service installations, adapt `presmon.service`
 
-### Configuration file `presmon.json`
+### Configuration file `presmon.yaml`
 
-| Field        | Remark |
-| ------------ | ------- |
-| `"input"` | `true`: Monitor for mouse and/or keyboard input events. On `false`, all input event monitoring is disabled.
-| `"keyboard"` | `true` or `false`. On `true` the python module `keyboard` is required, and a global keyboard hook is installed to generate presence information. |
-| `"mouse"` | `true` or `false`. On `true` the python module `mouse` is required, and a global keyboard hook is installed to generate presence information. The `mouse` module currently doesn't support macOS. Linux and Windows are supported. Doesn't work with systemd services, TBD. |
-| `"input_timeout"` | Default `180`, number of seconds after the last keyboard/mouse event when presence information is switched to 'absent'. |
-| `"ble"` | Default `false`, on `true` python moduel `bluepy` is required. Functionality NOT YET COMPLETED AND LINUX ONLY. |
-| `"ha_mqtt"` | Default `true`. On `true` python module `paho-mqtt` is required, and presence information is published via mqtt. |
-| `"ha_presence_devname"` | A name for this computer. The name is used (1) to generate an mqtt topic for publishing the presence information, topic: `<name>/presence/state`, payload: `on` (string, presence detected) or `off`. (2) to derive the name of a new Home Assistant binary sensor: `binary_sensor.<ha_presence_devname>`. |
-| `"mqtt_server"` | Hostname of mqtt server |
-
+* At mininmum, configure `mqtt: broker` and `homeassistant: presence_name`. 
+* Check which services should be active
+* After testing, increase `input: timeout` to a higher value (e.g. 300)
 
 ## Installation
 

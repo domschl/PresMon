@@ -1,5 +1,6 @@
 start.sh
 presmon.json
+presmon.yaml
 update.sh
 *.log
 test.*
