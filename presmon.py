@@ -15,7 +15,8 @@ import asyncio
 import yaml
 
 
-async def main_runner(loop, config, args):
+async def main_runner(config, args):
+    loop = asyncio.get_running_loop()
     log=logging.getLogger("runLoop")
     tasks=[]
     try:
@@ -117,7 +118,6 @@ args = parser.parse_args()
 logging.basicConfig(
        format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG, filename='presmon.log', filemode='w')
 
-config_file='presmon.json'
 yaml_file='presmon.yaml'
 try:
     with open(yaml_file,'r') as f:
@@ -130,9 +130,8 @@ except Exception as e:
 
 
 esc=False
-main_loop=asyncio.get_event_loop()
 try:
-    asyncio.run(main_runner(main_loop, config, args), debug=True)
+    asyncio.run(main_runner(config, args), debug=True)
 except KeyboardInterrupt:
     esc=True
 

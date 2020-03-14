@@ -21,7 +21,7 @@ class AsyncSignalServer:
         self.loop=loop
         self.args=args
         self.config=config
-        self.exit=False
+        self.exit_future=self.loop.create_future()
 
     async def handle_client(self, reader, writer):
         request = ""
@@ -37,15 +37,13 @@ class AsyncSignalServer:
             writer.write(response.encode('utf8'))
             await writer.drain()
         self.log.warning('quit received')
-        # await asyncio.sleep(0.1)
         writer.close()
-        # exit(0)
+        self.exit_future.set_result(True)
         self.exit=True
 
     async def get_command(self):
-        while self.exit is False:
-            await asyncio.sleep(0.1)
-        return {'cmd': 'quit'}
+        ret=await self.exit_future
+        return {'cmd': 'quit', 'retstate': ret}
 
     def close_daemon(self):
         pass
@@ -61,7 +59,7 @@ class AsyncSignalServer:
             writer.write(message.encode())
             data = await reader.read(100) # until('\n')
             writer.close()
-            await asyncio.sleep(1)
+            await asyncio.sleep(1)  # otherwise new instance of keyboard fails
             
             self.log.debug(f'Received: {data.decode()!r}')
             if 'quitting' in data.decode():
