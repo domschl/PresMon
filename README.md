@@ -31,11 +31,11 @@ sudo python presmon.py [--help] [-k]
 
 Mac: the terminal that runs this script needs Mac OS Catalina 'Accessibility' right, otherwise this will just crash.
 
-Once the script runs, a new binary_sensor can be found in Home Assistant (name: `binary_sensor.<ha_presence_devname>` as configured in `presmon.json`).
+Once the script runs, a new binary_sensor can be found in Home Assistant (name: `binary_sensor.<homeassistant: presence_name>` as configured in `presmon.yaml`).
 
 ### Hints for automatic start
 
-* There seems to be a problem with the `mouse` module and running `presmon.py` as systemd service. The process crashes on mouse events. So only use this with systemd, if the mouse option is set to `false` in `presmon.json`.
+* There seems to be a problem with the `mouse` module and running `presmon.py` as systemd service. The process crashes on mouse events. So only use this with systemd, if the mouse option is set to `false` in `presmon.yaml`.
 * For Linux, Mac it might be useful to allow `presmon.py` to run with `sudo` without password. That can be achieved by using `visudo` and adding a line: 
 
 ```
