@@ -17,6 +17,8 @@ homeassistant:
   active: true
   # Name of the presence entity in home assistant
   presence_name: entity-name-in-home-assistant
+  # Prefix for entity-names in HA for hotkeys
+  key_name_prefix: my-host-key
   # Prefix for auto-discovery messages, leave to default unless you have multiple HA servers. (See HA auto-discovery)
   discovery_prefix: homeassistant
 

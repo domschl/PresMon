@@ -13,6 +13,7 @@ import atexit
 import argparse
 import asyncio
 import yaml
+import re
 
 
 async def main_runner(config, args):
@@ -69,10 +70,25 @@ async def main_runner(config, args):
         if ha_config['active'] is True:
             from async_homeassistant import AsyncHABinarySensor
             hamq=AsyncHABinarySensor(loop, mqtt, ha_config['presence_name'], "presence", ha_config['discovery_prefix'])
+            hotkeys=input_config['hotkeys']
+            hakeys={}
+            for hotkey in hotkeys:
+                key_name=ha_config['key_name_prefix']+'-'+hotkey
+                cname=""
+                val_name=re.compile(r"[A-Za-z_-]")
+                for c in key_name:
+                    if val_name.match(c) is None:
+                        cname+="_"
+                    else:
+                        cname+=c
+                key_name=cname
+                hakeys[hotkey]=AsyncHABinarySensor(loop, mqtt, key_name, "key", ha_config['discovery_prefix'])
             mqtt.last_will(hamq.last_will_topic, hamq.last_will_message)
         await mqtt.initial_connect()  # Needs to happen after last_will is set.
         if ha_config['active'] is True:
             hamq.register_auto_discovery()
+            for hotkey in hotkeys:
+                hakeys[hotkey].register_auto_discovery()
     else:
         hamq=None
 
@@ -93,12 +109,13 @@ async def main_runner(config, args):
                     log.debug("Presence state: absent!")
                     hamq.set_state(False)
             if res['cmd']=='hotkey':
-                print(f"Hotkey-result {res}")
                 notdone=notdone.union((te.presence(),))
                 if res['state'] is True:
                     log.debug(f"Hot: {res['hotkey']} ON")
+                    hakeys[res['hotkey']].set_state(True)
                 else:
                     log.debug(f"Hot: {res['hotkey']} OFF")
+                    hakeys[res['hotkey']].set_state(False)
             if res['cmd']=='ble':
                 devs=res['devs']
                 for dev in devs:

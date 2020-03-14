@@ -43,12 +43,13 @@ class AsyncHABinarySensor():
         disco={
             "name": name,
             "unique_id": self.uuid,
-            "device_class": device_class,
             "payload_off": "off",
             "payload_on": "on",
             "state_topic": self.state_topic
             # "availablility_topic": avail_topic,
         }
+        if device_class is not None:
+            disco['device_class'] = device_class
         self.discovery_payload=json.dumps(disco)
         self.last_will_topic=self.state_topic
         self.last_will_message="off"
