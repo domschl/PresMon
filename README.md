@@ -6,7 +6,9 @@ Computer presence monitoring via keyboard events and [Home Assistant](https://ww
 
 `PresMon` is a python daemon (installable as systemd service) that monitors a computer for input activity, and generates a presence signal. The presence information is publish via MQTT and is then available as binary_sensor within Home Assistant.
 
-Home Assistant's mqtt auto-discovery is supported, a presence sensor (type binary_sensor, device_class presence)`binary_sensor.<ha_presence_devname>` is automatically generated in Home Assistant. The name can be configured in the config file `presmon.yaml`, s.b.
+Home Assistant's mqtt auto-discovery is supported, a presence sensor (type binary_sensor, device_class presence)`binary_sensor.<homeassistant: _presence_name>` is automatically generated in Home Assistant. The name can be configured in the config file `presmon.yaml`, s.b.
+
+Additionally keyboard-hotkeys can be exported as Home Assistant binary sensors of name `binary_sensor.<homeassistant: key-name-prefix-<keycode>>`.
 
 ## Configuration
 
@@ -78,6 +80,7 @@ to be installed for the system python (using `sudo /usr/bin/pip3 install paho-mq
 ## Notes
 
 * Windows has not been tested, but might work.
-* The `keyboard` library on Linux sometimes registers mouse clicks, depending on context.
+* The `keyboard` library on Linux sometimes registers mouse clicks, depending on context. Currrently, the key-release hotkey handling is broken (workaround via timer implemented)
+* Multiple hotkeys that differ only in digits (e.g. F1, F2) will not work due to name-clashes.
 * The mouse lib causes a SEGV crash, if run as systemd service. Cause not yet investigated. Works fine, if started via autostart.
 

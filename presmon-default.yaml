@@ -33,7 +33,7 @@ input:
   mouse: true
   # Hotkey support, each hotkey generates a MQTT device trigger: https://www.home-assistant.io/integrations/device_trigger.mqtt/
   # For hotkey encoding, see: https://github.com/boppreh/keyboard
-  # NOT YET AVAILABLE!
+  # Note: problem with multiple F-keys, since the number-part is removed in name-generation. t.b.d.
   hotkeys:
   - ctrl+pause
   - ctrl+scroll lock
