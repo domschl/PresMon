@@ -67,8 +67,8 @@ async def main_runner(config, args):
         from async_mqtt import AsyncMqtt
         mqtt = AsyncMqtt(loop, mqtt_config['broker'])
         if ha_config['active'] is True:
-            from async_homeassistant import AsyncHABinarySensorPresence
-            hamq=AsyncHABinarySensorPresence(loop, mqtt, ha_config['presence_name'], ha_config['discovery_prefix'])
+            from async_homeassistant import AsyncHABinarySensor
+            hamq=AsyncHABinarySensor(loop, mqtt, ha_config['presence_name'], "presence", ha_config['discovery_prefix'])
             mqtt.last_will(hamq.last_will_topic, hamq.last_will_message)
         await mqtt.initial_connect()  # Needs to happen after last_will is set.
         if ha_config['active'] is True:
