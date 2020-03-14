@@ -15,7 +15,7 @@ import asyncio
 import yaml
 
 
-async def run(loop, config, args):
+async def main_runner(loop, config, args):
     log=logging.getLogger("runLoop")
     tasks=[]
     try:
@@ -43,6 +43,7 @@ async def run(loop, config, args):
         from async_server import AsyncSignalServer
         ass=AsyncSignalServer(loop, config, args)
         await ass.check_register_socket()
+        tasks+=[ass.get_command()]
         
     if input_config['active'] is True:
         from async_input import AsyncInputPresence
@@ -85,10 +86,10 @@ async def run(loop, config, args):
             if res['cmd']=='presence':
                 notdone=notdone.union((te.presence(),))
                 if res['state']:
-                    log.debug("Present!")
+                    log.debug("Presence state: present!")
                     hamq.set_state(True)
                 else:
-                    log.debug("Absent!")
+                    log.debug("Presence state: absent!")
                     hamq.set_state(False)
             if res['cmd']=='hotkey':
                 notdone=notdone.union((te.presence(),))
@@ -100,6 +101,9 @@ async def run(loop, config, args):
                 print()
                 # log.debug(f"BLE: {len(res['devs'])}")
                 notdone=notdone.union((ble.discover(),))
+            if res['cmd']=='quit':
+                log.warning('Received quit command.')
+                esc=True
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -126,7 +130,9 @@ except Exception as e:
 
 
 esc=False
+main_loop=asyncio.get_event_loop()
 try:
-    asyncio.run(run(asyncio.get_event_loop(), config, args), debug=True)
+    asyncio.run(main_runner(main_loop, config, args), debug=True)
 except KeyboardInterrupt:
     esc=True
+

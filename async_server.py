@@ -21,6 +21,7 @@ class AsyncSignalServer:
         self.loop=loop
         self.args=args
         self.config=config
+        self.exit=False
 
     async def handle_client(self, reader, writer):
         request = ""
@@ -28,15 +29,23 @@ class AsyncSignalServer:
             request = (await reader.read(255)).decode('utf8').strip()
             self.log.debug(f"got socket [{request}]")
             if request=='quit':
-                response='quitting!'
+                response='quitting!\n'
+            elif request=='help':
+                response="help: this help\nquit: stop this daemon.\n"
             else:
-                response=f'Error: {request}'
+                response=f'Error: {request} (try: help)\n'
             writer.write(response.encode('utf8'))
             await writer.drain()
         self.log.warning('quit received')
-        await asyncio.sleep(0.1)
+        # await asyncio.sleep(0.1)
         writer.close()
-        exit(0)
+        # exit(0)
+        self.exit=True
+
+    async def get_command(self):
+        while self.exit is False:
+            await asyncio.sleep(0.1)
+        return {'cmd': 'quit'}
 
     def close_daemon(self):
         pass
@@ -50,10 +59,13 @@ class AsyncSignalServer:
             message='quit\n'
             self.log.debug(f'Send: {message.strip()}')
             writer.write(message.encode())
-            data = await reader.read(100)
+            data = await reader.read(100) # until('\n')
             writer.close()
-            self.log.debug(f'Received: {data.decode()!r}')
             await asyncio.sleep(1)
+            
+            self.log.debug(f'Received: {data.decode()!r}')
+            if 'quitting' in data.decode():
+                self.log.info("Old instance terminated.")
             if self.args.kill_daemon is True:
                 print("Aborting after sending KILL signal")
                 exit(0)
