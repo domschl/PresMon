@@ -35,7 +35,7 @@ class AsyncHABinarySensor():
         self.state_topic=f"{name}/"+devtype+"/state"
         self.discovery_topic=f"{homeassistant_discovery_prefix}/binary_sensor/presence-{name}/config"
         # avail_topic=f"{name}/presence/available"
-        if devtype='key':
+        if devtype=='key':
             device_class=None
         else:
             device_class=devtype
@@ -43,13 +43,13 @@ class AsyncHABinarySensor():
         disco={
             "name": name,
             "unique_id": self.uuid,
-            "device_class": devtype,
+            "device_class": device_class,
             "payload_off": "off",
             "payload_on": "on",
             "state_topic": self.state_topic
             # "availablility_topic": avail_topic,
         }
-        self.discovery_payload=json.dumps(disco))
+        self.discovery_payload=json.dumps(disco)
         self.last_will_topic=self.state_topic
         self.last_will_message="off"
         
