@@ -47,7 +47,7 @@ Once the script runs, a new binary_sensor can be found in Home Assistant (name: 
 
 ```bash
 #!/bin/bash
-sudo <full-path-to-script>/presmon.py -f &
+sudo <full-path-to-script>/presmon.py &
 ```
 
 and use your desktop environments autostart-feature to start this script on login.
@@ -67,7 +67,7 @@ For Macs, a few extra things are required:
 to be installed for the system python (using `sudo /usr/bin/pip3 install paho-mqtt keyboard`)
 * Use the macOS automator app to create a new 'Application'.
 * Add 'shell script'
-* Paste and adapt: `sudo /<full-path-to-script>/presmon.py -f &>/dev/null &`. The redirection of the output suppresses the eternally spinning gear of Automator.
+* Paste and adapt: `sudo /<full-path-to-script>/presmon.py &>/dev/null &`. The redirection of the output suppresses the eternally spinning gear of Automator.
 
 <img src="https://github.com/domschl/PresMon/blob/master/Resources/Automator.png" width="480" />
 

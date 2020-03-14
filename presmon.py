@@ -105,6 +105,7 @@ os.chdir(dname)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-k', action='store_true', dest='kill_daemon', help='Kill existing instance and terminate.')
+parser.add_argument('-f', action='store_true', dest='obsolete option', help='Does nothing anymore, since replacing existing daemons is now automatic.')
 args = parser.parse_args()
 
 logging.basicConfig(
