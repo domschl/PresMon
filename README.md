@@ -2,13 +2,13 @@
 
 ***Project status: alpha.*** Structure, configuration and functionality will change and is far from final.
 
-Computer presence monitoring via keyboard events and [Home Assistant](https://www.home-assistant.io/) binary_sensor presence integration.
+Computer presence monitoring via keyboard events and [Home Assistant](https://www.home-assistant.io/) binary_sensor presence and hotkey integration.
 
 `PresMon` is a python daemon (installable as systemd service) that monitors a computer for input activity, and generates a presence signal. The presence information is publish via MQTT and is then available as binary_sensor within Home Assistant.
 
 Home Assistant's mqtt auto-discovery is supported, a presence sensor (type binary_sensor, device_class presence)`binary_sensor.<homeassistant: _presence_name>` is automatically generated in Home Assistant. The name can be configured in the config file `presmon.yaml`, s.b.
 
-Additionally keyboard-hotkeys can be exported as Home Assistant binary sensors of name `binary_sensor.<homeassistant: key-name-prefix-<keycode>>`.
+Additionally keyboard-hotkeys can be exported as Home Assistant binary sensors of name `binary_sensor.<homeassistant: key-name-prefix-<keycode>>`. Use your keyboard to control your Home Assistant setup.
 
 ## Configuration
 
