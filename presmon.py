@@ -42,7 +42,8 @@ async def run(loop, config, args):
     if server_config['active'] is True:
         from async_server import AsyncSignalServer
         ass=AsyncSignalServer(loop, config, args)
-
+        await ass.check_register_socket()
+        
     if input_config['active'] is True:
         from async_input import AsyncInputPresence
         timeout=input_config['timeout']
@@ -103,8 +104,7 @@ dname = os.path.dirname(abspath)
 os.chdir(dname)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-q', action='store_true', dest='quiet', help='Check for existing instance without error output.')
-parser.add_argument('-f', action='store_true', dest='force', help='Dont check for existing instances, ignore lock.')
+parser.add_argument('-k', action='store_true', dest='kill_daemon', help='Kill existing instance and terminate.')
 args = parser.parse_args()
 
 logging.basicConfig(

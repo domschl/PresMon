@@ -26,7 +26,7 @@ Requirements: [`paho-mqtt`](https://pypi.org/project/paho-mqtt/), [`keyboard`](h
 `presmon` needs to be run as root, either as systemd service, or via
 
 ```bash
-sudo python presmon.py [--help] [-q] [-f]
+sudo python presmon.py [--help] [-k]
 ```
 
 Mac: the terminal that runs this script needs Mac OS Catalina 'Accessibility' right, otherwise this will just crash.
