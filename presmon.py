@@ -76,7 +76,7 @@ async def main_runner(config, args):
                 for hotkey in hotkeys:
                     key_name=ha_config['key_name_prefix']+'-'+hotkey
                     cname=""
-                    val_name=re.compile(r"[A-Za-z_-]")
+                    val_name=re.compile(r"[A-Za-z0-9_-]")
                     for c in key_name:
                         if val_name.match(c) is None:
                             cname+="_"
