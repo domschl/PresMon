@@ -15,10 +15,8 @@ mqtt:
 homeassistant:
   # On active, use MQTT to publish presence information and generate a presence device with MQTT auto-discovery
   active: true
-  # Name of the presence entity in home assistant
-  presence_name: entity-name-in-home-assistant
-  # Prefix for entity-names in HA for hotkeys
-  key_name_prefix: my-host-key
+  # Name of the entity in home assistant, uses hostname, if empty
+  entity_name:
   # Prefix for auto-discovery messages, leave to default unless you have multiple HA servers. (See HA auto-discovery)
   discovery_prefix: homeassistant
 

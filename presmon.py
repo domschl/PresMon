@@ -69,12 +69,12 @@ async def main_runner(config, args):
         mqtt = AsyncMqtt(loop, mqtt_config['broker'])
         if ha_config['active'] is True:
             from async_homeassistant import AsyncHABinarySensor
-            hamq=AsyncHABinarySensor(loop, mqtt, ha_config['presence_name'], "presence", ha_config['discovery_prefix'])
+            hamq=AsyncHABinarySensor(loop, mqtt, "presence", ha_config['entity_name'], ha_config['discovery_prefix'])
             hotkeys=input_config['hotkeys']
             hakeys={}
             if hotkeys is not None:
                 for hotkey in hotkeys:
-                    key_name=ha_config['key_name_prefix']+'-'+hotkey
+                    key_name=hotkey
                     cname=""
                     val_name=re.compile(r"[A-Za-z0-9_-]")
                     for c in key_name:
@@ -83,7 +83,7 @@ async def main_runner(config, args):
                         else:
                             cname+=c
                     key_name=cname
-                    hakeys[hotkey]=AsyncHABinarySensor(loop, mqtt, key_name, "key", ha_config['discovery_prefix'])
+                    hakeys[hotkey]=AsyncHABinarySensor(loop, mqtt, "key", key_name, ha_config['discovery_prefix'])
             mqtt.last_will(hamq.last_will_topic, hamq.last_will_message)
         await mqtt.initial_connect()  # Needs to happen after last_will is set.
         if ha_config['active'] is True:
