@@ -81,6 +81,5 @@ to be installed for the system python (using `sudo /usr/bin/pip3 install paho-mq
 
 * Windows has not been tested, but might work.
 * The `keyboard` library on Linux sometimes registers mouse clicks, depending on context. Currrently, the key-release hotkey handling is broken (workaround via timer implemented)
-* Multiple hotkeys that differ only in digits (e.g. F1, F2) will not work due to name-clashes.
 * The mouse lib causes a SEGV crash, if run as systemd service. Cause not yet investigated. Works fine, if started via autostart.
 
