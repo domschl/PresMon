@@ -19,7 +19,7 @@ class AsyncHABinarySensor():
             name=name[0].upper()+name[1:]
             name+="_"+type
         cname=""
-        val_name=re.compile(r"[A-Za-z_-]")
+        val_name=re.compile(r"[A-Za-z0-9_-]")
         for c in name:
             if val_name.match(c) is None:
                 cname+="_"
