@@ -17,6 +17,9 @@ class AsyncHABinarySensor():
             print(f'Invalid devtype {devtype} used, check yaml config.')
             exit(-1)
         hostname=socket.gethostname()
+        ind=hostname.find('.')
+        if ind != -1:
+            hostname=hostname[:ind]
         hostname=hostname[0].upper()+hostname[1:]
         if name is None:
             name=hostname+'_'+devtype
