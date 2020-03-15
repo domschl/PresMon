@@ -72,23 +72,25 @@ async def main_runner(config, args):
             hamq=AsyncHABinarySensor(loop, mqtt, ha_config['presence_name'], "presence", ha_config['discovery_prefix'])
             hotkeys=input_config['hotkeys']
             hakeys={}
-            for hotkey in hotkeys:
-                key_name=ha_config['key_name_prefix']+'-'+hotkey
-                cname=""
-                val_name=re.compile(r"[A-Za-z_-]")
-                for c in key_name:
-                    if val_name.match(c) is None:
-                        cname+="_"
-                    else:
-                        cname+=c
-                key_name=cname
-                hakeys[hotkey]=AsyncHABinarySensor(loop, mqtt, key_name, "key", ha_config['discovery_prefix'])
+            if hotkeys is not None:
+                for hotkey in hotkeys:
+                    key_name=ha_config['key_name_prefix']+'-'+hotkey
+                    cname=""
+                    val_name=re.compile(r"[A-Za-z_-]")
+                    for c in key_name:
+                        if val_name.match(c) is None:
+                            cname+="_"
+                        else:
+                            cname+=c
+                    key_name=cname
+                    hakeys[hotkey]=AsyncHABinarySensor(loop, mqtt, key_name, "key", ha_config['discovery_prefix'])
             mqtt.last_will(hamq.last_will_topic, hamq.last_will_message)
         await mqtt.initial_connect()  # Needs to happen after last_will is set.
         if ha_config['active'] is True:
             hamq.register_auto_discovery()
-            for hotkey in hotkeys:
-                hakeys[hotkey].register_auto_discovery()
+            if hotkeys is not None:
+                for hotkey in hotkeys:
+                    hakeys[hotkey].register_auto_discovery()
     else:
         hamq=None
 

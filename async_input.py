@@ -128,12 +128,13 @@ class AsyncInputEventMonitor():
 
     def kbd_background_thread(self):
         keyboard.hook(self.que_kdb_event)
-        for hotkey in self.hotkeys:
-            self.log.debug(f"Adding hotkey hook for {hotkey}")
-            self.hotkey_state[hotkey]={'last_pressed': 0, 'pressed': False}
-            keyboard.add_hotkey(hotkey, self.que_hotkey_event, args=(hotkey, True))
-            # Unfortunately trigger_on_release seems broken: https://github.com/boppreh/keyboard/issues/178
-            # keyboard.add_hotkey(hotkey, self.que_hotkey_event_end, args=(hotkey, False), trigger_on_release=True)
+        if self.hotkeys is not None:
+            for hotkey in self.hotkeys:
+                self.log.debug(f"Adding hotkey hook for {hotkey}")
+                self.hotkey_state[hotkey]={'last_pressed': 0, 'pressed': False}
+                keyboard.add_hotkey(hotkey, self.que_hotkey_event, args=(hotkey, True))
+                # Unfortunately trigger_on_release seems broken: https://github.com/boppreh/keyboard/issues/178
+                # keyboard.add_hotkey(hotkey, self.que_hotkey_event_end, args=(hotkey, False), trigger_on_release=True)
 
         while self.threads_active is True:
             keyboard.wait()
