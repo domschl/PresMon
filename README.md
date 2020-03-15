@@ -6,9 +6,9 @@ Computer presence monitoring via keyboard events and [Home Assistant](https://ww
 
 `PresMon` is a python daemon (installable as systemd service) that monitors a computer for input activity, and generates a presence signal. The presence information is publish via MQTT and is then available as binary_sensor within Home Assistant.
 
-Home Assistant's mqtt auto-discovery is supported, a presence sensor (type binary_sensor, device_class presence)`binary_sensor.<homeassistant: _presence_name>` is automatically generated in Home Assistant. The name can be configured in the config file `presmon.yaml`, s.b.
+Home Assistant's mqtt auto-discovery is supported, a presence sensor (type binary_sensor, device_class presence)`binary_sensor.<homeassistant: <entity_name>_presence` is automatically generated in Home Assistant. The name can be configured in the config file `presmon.yaml`, and is the computer's hostname by default.
 
-Additionally keyboard-hotkeys can be exported as Home Assistant binary sensors of name `binary_sensor.<homeassistant: key-name-prefix-<keycode>>`. Use your keyboard to control your Home Assistant setup.
+Additionally keyboard-hotkeys can be exported as Home Assistant binary sensors of name `binary_sensor.<homeassistant: <entity_name>_key_<keyname>`. Use your keyboard to control your Home Assistant setup.
 
 ## Configuration
 
@@ -17,7 +17,7 @@ Additionally keyboard-hotkeys can be exported as Home Assistant binary sensors o
 
 ### Configuration file `presmon.yaml`
 
-* At mininmum, configure `mqtt: broker` and `homeassistant: presence_name`. 
+* At mininmum, configure `mqtt: broker`. 
 * Check which services should be active
 * After testing, increase `input: timeout` to a higher value (e.g. 300)
 
@@ -32,8 +32,6 @@ sudo python presmon.py [--help] [-k]
 ```
 
 Mac: the terminal that runs this script needs Mac OS Catalina 'Accessibility' right, otherwise this will just crash.
-
-Once the script runs, a new binary_sensor can be found in Home Assistant (name: `binary_sensor.<homeassistant: presence_name>` as configured in `presmon.yaml`).
 
 ### Hints for automatic start
 
