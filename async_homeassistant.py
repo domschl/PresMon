@@ -33,7 +33,7 @@ class AsyncHABinarySensor():
         self.homeassistant_discovery_prefix=homeassistant_discovery_prefix
 
         self.state_topic=f"{name}/"+devtype+"/state"
-        self.discovery_topic=f"{homeassistant_discovery_prefix}/binary_sensor/presence-{name}/config"
+        self.discovery_topic=f"{homeassistant_discovery_prefix}/binary_sensor/{devtype}-{name}/config"
         # avail_topic=f"{name}/presence/available"
         if devtype=='key':
             device_class=None
