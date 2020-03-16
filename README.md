@@ -8,7 +8,8 @@ Computer presence monitoring via keyboard events and [Home Assistant](https://ww
 
 Home Assistant's mqtt auto-discovery is supported, a presence sensor (type binary_sensor, device_class presence)`binary_sensor.<homeassistant: <entity_name>_presence` is automatically generated in Home Assistant. The name can be configured in the config file `presmon.yaml`, and is the computer's hostname by default.
 
-Additionally keyboard-hotkeys can be exported as Home Assistant binary sensors of name `binary_sensor.<homeassistant: <entity_name>_key_<keyname>`. Use your keyboard to control your Home Assistant setup.
+Additionally keyboard-hotkeys can be exported as Home Assistant binary sensors of name `binary_sensor.<homeassistant: <entity_name>_key_<keyname>`. Use your keyboard to control your Home Assistant setup. Buttons can be used in `button` mode (HA binary
+sensor is on while keyboard hotkey is pressed), or `flipflop` mode (first time hotkey is pressed, HA binary sensor switches on, next time hotkey is pressed, binary sensor switches off). See `presmon_default.yaml` for examples and more information.
 
 ## Configuration
 
@@ -78,6 +79,5 @@ to be installed for the system python (using `sudo /usr/bin/pip3 install paho-mq
 ## Notes
 
 * Windows has not been tested, but might work.
-* The `keyboard` library on Linux sometimes registers mouse clicks, depending on context. Currrently, the key-release hotkey handling is broken (workaround via timer implemented)
+* The `keyboard` library on Linux sometimes registers mouse clicks, depending on context. Currently, the key-release hotkey handling is broken (workaround via timer implemented)
 * The mouse lib causes a SEGV crash, if run as systemd service. Cause not yet investigated. Works fine, if started via autostart.
-

@@ -31,6 +31,7 @@ input:
   mouse: true
   # Hotkey support, each hotkey generates a MQTT device trigger: https://www.home-assistant.io/integrations/device_trigger.mqtt/
   # For hotkey encoding, see: https://github.com/boppreh/keyboard
+  # Each hotkey has either value `button` (binary sensor is on, while button is pressed) or `flipflop` (binary sensor changes state each time the hotkey is pressed.)
   hotkeys:
-  - ctrl+pause
-  - ctrl+scroll lock
+    ctrl+f12: button
+    alt+f12: flipflop

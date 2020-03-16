@@ -75,6 +75,14 @@ async def main_runner(config, args):
             if hotkeys is not None:
                 for hotkey in hotkeys:
                     key_name=hotkey
+                    try:
+                        key_type=hotkeys[hotkey]
+                    except:
+                        log.error("A hotkey must have either type 'button' or 'flipflop'")
+                        key_type='button'
+                    if key_type not in ['button', 'flipflop']:
+                        log.error("A hotkey must have either type 'button' or 'flipflop'")
+                        key_type='button'
                     cname=""
                     val_name=re.compile(r"[A-Za-z0-9_-]")
                     for c in key_name:
@@ -83,7 +91,7 @@ async def main_runner(config, args):
                         else:
                             cname+=c
                     key_name=cname
-                    hakeys[hotkey]=AsyncHABinarySensor(loop, mqtt, "key", key_name, ha_config['discovery_prefix'])
+                    hakeys[hotkey]=AsyncHABinarySensor(loop, mqtt, key_type, key_name, ha_config['discovery_prefix'])
             mqtt.last_will(hamq.last_will_topic, hamq.last_will_message)
         await mqtt.initial_connect()  # Needs to happen after last_will is set.
         if ha_config['active'] is True:

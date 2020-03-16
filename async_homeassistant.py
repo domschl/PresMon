@@ -14,10 +14,17 @@ class AsyncHABinarySensor():
         self.creation_time=time.time()
         self.log = logging.getLogger("HABinarySensor")
         self.loop = loop
-        if devtype not in ['presence', 'key']:
+        if devtype not in ['presence', 'button', 'flipflop']:
             self.log.error(f'Invalid devtype {devtype}')
             print(f'Invalid devtype {devtype} used, check yaml config.')
             exit(-1)
+        if devtype in ['button', 'flipflop']:
+            self.button_mode=devtype
+            self.button_state=False
+            devtype='key'
+        else:
+            self.button_mode='button'
+            self.button_state=False
         hostname=socket.gethostname()
         ind=hostname.find('.')
         if ind != -1:
@@ -118,13 +125,26 @@ class AsyncHABinarySensor():
         self.update_attributes()
 
     def set_state(self, state):
-        if state is True:
-            self.log.debug('Publishing `on` state.')
-            self.mqtt.publish(self.avail_topic, "on")
-            self.update_attributes()
-            self.mqtt.publish(self.state_topic, "on", retain=True)
+        self.mqtt.publish(self.avail_topic, "on")
+        self.update_attributes()
+        if self.button_mode == 'button':
+            if state is True:
+                self.log.debug('Publishing `on` state.')
+                self.mqtt.publish(self.state_topic, "on", retain=True)
+                self.button_state=state
+            else:
+                self.log.debug('Publishing `off` state.')
+                self.mqtt.publish(self.state_topic, "off", retain=True)
+                self.button_state=state
+        elif self.button_mode == 'flipflop':
+            if state is True:
+                if self.button_state is True:
+                    self.log.debug('Publishing FF `off` state.')
+                    self.mqtt.publish(self.state_topic, "off", retain=True)
+                    self.button_state=False
+                else:
+                    self.log.debug('Publishing FF `on` state.')
+                    self.mqtt.publish(self.state_topic, "on", retain=True)
+                    self.button_state=True
         else:
-            self.log.debug('Publishing `off` state.')
-            self.mqtt.publish(self.avail_topic, "on")
-            self.update_attributes()
-            self.mqtt.publish(self.state_topic, "off", retain=True)
+            self.log.error(f"Unknown button_mode {self.button_mode}!")
