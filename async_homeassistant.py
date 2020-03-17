@@ -101,7 +101,7 @@ class AsyncHABinarySensor():
 
     def update_attributes(self):
         system, release, version = platform.system_alias(platform.system(), platform.release(), platform.version())
-        uptime=self.creation_time-time.time()
+        uptime=time.time() - self.creation_time
         uphours=int(uptime/3600)
         updays=int(uphours/24)
         uphours=uphours-updays*24
