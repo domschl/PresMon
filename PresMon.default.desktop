@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Exec=/path/to/myscript/start.sh
+Name=PresMon
+Comment=Home Assistant keyboard presence monitor
+Terminal=false
+OnlyShowIn=GNOME
+Type=Application
+StartupNotify=false
+X-GNOME-Autostart-enabled=true
+
