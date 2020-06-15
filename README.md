@@ -1,6 +1,6 @@
 # PresMon
 
-***Project status: alpha.*** Structure, configuration and functionality will change and is far from final.
+***Project status: beta.*** 
 
 Computer presence monitoring via keyboard events and [Home Assistant](https://www.home-assistant.io/) binary_sensor presence and hotkey integration.
 
@@ -44,14 +44,14 @@ Mac: the terminal that runs this script needs Mac OS Catalina 'Accessibility' ri
 ```
 
 `presmon.py` needs to be executable (`chmod a+x presmon.py`).
-* Create an autostart script (requires the `visudo` entry in order to run without passwordl-prompt):
+* Create an autostart script (requires the `visudo` entry in order to run without passwordl-prompt), you can modify and rename `start.default.sh`; edit it and rename it to `start.sh`:
 
 ```bash
 #!/bin/bash
 sudo <full-path-to-script>/presmon.py &
 ```
 
-and use your desktop environments autostart-feature to start this script on login.
+and use your desktop environments autostart-feature to start this script on login. Some desktops (e.g. Gnome) need a `.desktop` file for autostart to recognize the script. You can modify and rename the template `PresMon.default.desktop`. Rename it to `PresMon.desktop` and copy it to an applications directory, e.g. `~/.local/share/applications/`. Then update the database with `update-desktop-database ~/.local/share/applications/`.
 
 ### macOS autostart
 
