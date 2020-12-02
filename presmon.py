@@ -45,7 +45,7 @@ async def main_runner(config, args):
         from async_server import AsyncSignalServer
         ass=AsyncSignalServer(loop, config, args)
         await ass.check_register_socket()
-        tasks+=[ass.get_command()]
+        tasks+=[asyncio.create_task(ass.get_command())]
         
     if input_config['active'] is True:
         from async_input import AsyncInputPresence
@@ -55,13 +55,13 @@ async def main_runner(config, args):
         else:
             mouse_active=input_config['mouse']
         te=AsyncInputPresence(input_config['keyboard'], mouse_active, input_config['hotkeys'], timeout=timeout)
-        tasks+=[te.presence()]
+        tasks+=[asyncio.create_task(te.presence())]
     else:
         te=None
     if btle_config['active'] is True:
         from async_ble import AsyncBLEPresence
         ble=AsyncBLEPresence(timeout=10)
-        tasks+=[ble.discover()]
+        tasks+=[asyncio.create_task(ble.discover())]
     else:
         ble=None
     if mqtt_config['active'] is True:
@@ -111,7 +111,7 @@ async def main_runner(config, args):
         for task in done:
             res=task.result()
             if res['cmd']=='presence':
-                notdone=notdone.union((te.presence(),))
+                notdone=notdone.union((asyncio.create_task(te.presence()),))
                 if res['state']:
                     log.debug("Presence state: present!")
                     hamq.set_state(True)
@@ -119,7 +119,7 @@ async def main_runner(config, args):
                     log.debug("Presence state: absent!")
                     hamq.set_state(False)
             if res['cmd']=='hotkey':
-                notdone=notdone.union((te.presence(),))
+                notdone=notdone.union((asyncio.create_task(te.presence()),))
                 if res['state'] is True:
                     log.debug(f"Hot: {res['hotkey']} ON")
                     hakeys[res['hotkey']].set_state(True)
@@ -132,7 +132,7 @@ async def main_runner(config, args):
                     print(f"{dev} - {devs[dev]}")
                 print()
                 # log.debug(f"BLE: {len(res['devs'])}")
-                notdone=notdone.union((ble.discover(),))
+                notdone=notdone.union((asyncio.create_task(ble.discover()),))
             if res['cmd']=='quit':
                 log.warning('Received quit command.')
                 esc=True
