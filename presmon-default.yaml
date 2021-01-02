@@ -15,6 +15,9 @@ mqtt:
 homeassistant:
   # On active, use MQTT to publish presence information and generate a presence device with MQTT auto-discovery
   active: true
+  # Unique ID, will be set with MAC-address on first run, and then never changed
+  # since MAC addresses are randomized on some systems, causing device duplications.
+  UUID: 
   # Name of the entity in home assistant, uses hostname, if empty
   entity_name:
   # Prefix for auto-discovery messages, leave to default unless you have multiple HA servers. (See HA auto-discovery)

@@ -12,8 +12,9 @@ import signal
 import atexit
 import argparse
 import asyncio
-import yaml
+import ruamel.yaml   # pip install ruamel.yaml, preserves comments!
 import re
+import uuid
 
 
 async def main_runner(config, args):
@@ -69,7 +70,7 @@ async def main_runner(config, args):
         mqtt = AsyncMqtt(loop, mqtt_config['broker'])
         if ha_config['active'] is True:
             from async_homeassistant import AsyncHABinarySensor
-            hamq=AsyncHABinarySensor(loop, mqtt, "presence", ha_config['entity_name'], ha_config['discovery_prefix'])
+            hamq=AsyncHABinarySensor(loop, mqtt, "presence", ha_config['entity_name'], ha_config['UUID'], ha_config['discovery_prefix'])
             hotkeys=input_config['hotkeys']
             hakeys={}
             if hotkeys is not None:
@@ -91,7 +92,7 @@ async def main_runner(config, args):
                         else:
                             cname+=c
                     key_name=cname
-                    hakeys[hotkey]=AsyncHABinarySensor(loop, mqtt, key_type, key_name, ha_config['discovery_prefix'])
+                    hakeys[hotkey]=AsyncHABinarySensor(loop, mqtt, key_type, key_name, ha_config['UUID'], ha_config['discovery_prefix'])
             mqtt.last_will(hamq.last_will_topic, hamq.last_will_message)
         await mqtt.initial_connect()  # Needs to happen after last_will is set.
         if ha_config['active'] is True:
@@ -150,18 +151,28 @@ def read_config_arguments():
     logging.basicConfig(
         format='%(asctime)s %(levelname)s %(name)s %(message)s', level=logging.DEBUG, filename='presmon.log', filemode='w')
 
+    yaml=ruamel.yaml.YAML()
     yaml_file='presmon.yaml'
     try:
         with open(yaml_file,'r') as f:
-            config=yaml.load(f, Loader=yaml.SafeLoader)
+            config=yaml.load(f)
     except Exception as e:
         logging.warning(f"Couldn't read {yaml_file}, {e}")
         print(f"Start failed, invalid YAML config file {yaml_file}: {e}")
         exit(0)
+    if 'homeassistant' in config:
+        if 'UUID' not in config['homeassistant'] or config['homeassistant']['UUID']==None or len(config['homeassistant']['UUID'])<4:
+            print("one-time UUID generation...")
+            nd=hex(uuid.getnode())[2:]
+            mac_address=f"{nd[0:2]}:{nd[2:4]}:{nd[4:6]}:{nd[6:8]}:{nd[8:10]}:{nd[10:12]}"
+            config['homeassistant']['UUID']=mac_address
+            try:
+                with open(yaml_file,'w') as f:
+                    yaml.dump(config, f)
+            except:
+                print("Updating config UUID failed, may cause duplicate HA devices!")
     return config, args
-
-
-
+    
 config, args = read_config_arguments()
 esc=False
 try:

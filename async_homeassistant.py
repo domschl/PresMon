@@ -10,7 +10,7 @@ import platform
 HA_VERSION="0.2.1"
 
 class AsyncHABinarySensor():
-    def __init__(self, loop, mqtt, devtype, name=None, homeassistant_discovery_prefix='homeassistant'):  
+    def __init__(self, loop, mqtt, devtype, name=None, mac_uuid=None, homeassistant_discovery_prefix='homeassistant'):  
         self.creation_time=time.time()
         self.log = logging.getLogger("HABinarySensor")
         self.loop = loop
@@ -44,10 +44,14 @@ class AsyncHABinarySensor():
             name=cname
             name=hostname+'_'+devtype+'_'+name
             topic_root=name+'/'+devtype+'/'+name
-        nd=hex(uuid.getnode())[2:]
-        self.mac_address=f"{nd[0:2]}:{nd[2:4]}:{nd[4:6]}:{nd[6:8]}:{nd[8:10]}:{nd[10:12]}"
+        if mac_uuid is None:
+            nd=hex(uuid.getnode())[2:]
+            self.mac_address=f"{nd[0:2]}:{nd[2:4]}:{nd[4:6]}:{nd[6:8]}:{nd[8:10]}:{nd[10:12]}"
+            self.uuid=f"{self.mac_address}-{name}"
+        else:
+            self.mac_address=mac_uuid
+            self.uuid=f"{mac_uuid}-{name}"
         self.ip_address=self.get_ip()
-        self.uuid=f"{self.mac_address}-{name}"
 
         self.mqtt=mqtt
         self.homeassistant_discovery_prefix=homeassistant_discovery_prefix
