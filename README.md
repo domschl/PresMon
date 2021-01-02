@@ -24,7 +24,7 @@ sensor is on while keyboard hotkey is pressed), or `flipflop` mode (first time h
 
 ## Installation
 
-Requirements: [pyyaml](https://pypi.org/project/PyYAML/), [`paho-mqtt`](https://pypi.org/project/paho-mqtt/), [`keyboard`](https://pypi.org/project/keyboard/), [`bluepy`](https://github.com/IanHarvey/bluepy) [optional, Linux only]. [`mouse`](https://github.com/boppreh/mouse) [optional, Linux, Windows, problems with systemd] Since `presmon` needs to run as root, the dependencies must be installed for the root user.
+Requirements: [ruamel.yaml](https://pypi.org/project/ruamel.yaml/), [`paho-mqtt`](https://pypi.org/project/paho-mqtt/), [`keyboard`](https://pypi.org/project/keyboard/), [`bluepy`](https://github.com/IanHarvey/bluepy) [optional, Linux only]. [`mouse`](https://github.com/boppreh/mouse) [optional, Linux, Windows, problems with systemd] Since `presmon` needs to run as root, the dependencies must be installed for the root user.
 
 `presmon` needs to be run as root, either as systemd service, or via
 
@@ -75,6 +75,10 @@ to be installed for the system python (using `sudo /usr/bin/pip3 install paho-mq
 * Save your application
 * Use Control Panel Security / Privacy to add your newly created Automator application to 'Accessibility' (which allows the input monitoring).
 * Use Control Panel user administration to add a new startup item, and add the application that was created with automator. 
+
+## History
+* 2021-01-02: switched from pyyaml to ruamel.yaml (preserves comments on load/dump cycle), make first-time MAC into UUID to prevent MAC
+  randomization to mess up device-ids.
 
 ## Notes
 
