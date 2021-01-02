@@ -64,8 +64,8 @@ For Macs, a few extra things are required:
 ```
 
 * Make sure `presmon.py` is executable (`chmod a+x presmon.py`)
-* Automator will use Catalina's system `/usr/bin/python3`. So the dependencies (`paho-mqtt`, `keyboard`) need
-to be installed for the system python (using `sudo /usr/bin/pip3 install paho-mqtt keyboard`)
+* Automator will use Catalina's/Big Sur's system `/usr/bin/python3`. So the dependencies (`ruamel.yaml`, `paho-mqtt`, `keyboard`) need
+to be installed for the system python (using `sudo /usr/bin/pip3 install ruamel.yaml paho-mqtt keyboard`)
 * Use the macOS automator app to create a new 'Application'.
 * Add 'shell script'
 * Paste and adapt: `sudo /<full-path-to-script>/presmon.py &>/dev/null &`. The redirection of the output suppresses the eternally spinning gear of Automator.
