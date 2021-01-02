@@ -10,7 +10,6 @@ import signal
 import atexit
 import argparse
 import asyncio
-import yaml
 
 
 class AsyncSignalServer:

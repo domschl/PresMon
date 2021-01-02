@@ -34,12 +34,15 @@ class AsyncInputEventMonitor():
         self.min_key_pressed_duration=min_key_pressed_duration
 
         if use_keyboard is False and use_mouse is False:
+            print("NO KEYBOARD MONITORING!")
             self.log.error('This module wont do anything, since neither of the required packages `mouse` and `keyboard` are installed.')
         if monitor_keyboard is False and monitor_mouse is False:
+            print("ALL DISABLED")
             self.log.warning('All monitoring is disabled!')
         if monitor_keyboard is True and use_keyboard is False:
             self.log.error('Cannot monitor keyboard if python module `keyboard` is not installed!')
         if monitor_keyboard is True and use_keyboard is True:
+            print("STARTING KEYBOARD MONITOR")
             self.hotkey_state={}
             self.kbd_event_thread = threading.Thread(
                 target=self.kbd_background_thread, args=())
@@ -51,6 +54,9 @@ class AsyncInputEventMonitor():
                 target=self.kbd_release_background_thread, args=())
             self.broken_kbd_release_event_thread.setDaemon(True)
             self.broken_kbd_release_event_thread.start()
+            self.log.debug("KBD monitors started")
+        else:
+            self.log.debug("KBD NOT monitored!")
         if monitor_mouse is True and use_mouse is False:
             self.log.error('Cannot monitor mouse if python module `mouse` is not installed!')
         if monitor_mouse is True and use_mouse is True:
@@ -62,6 +68,8 @@ class AsyncInputEventMonitor():
     def que_kdb_event(self, event):
         line = ', '.join(str(code) for code in keyboard._pressed_events)
         ev={"event_type": "key", "keys": line}
+
+        self.log.debug(f"Key pressed: {line}")
         self.lock.acquire()
         try:
             self.que.put_nowait(ev)
@@ -136,6 +144,7 @@ class AsyncInputEventMonitor():
                 # Unfortunately trigger_on_release seems broken: https://github.com/boppreh/keyboard/issues/178
                 # keyboard.add_hotkey(hotkey, self.que_hotkey_event_end, args=(hotkey, False), trigger_on_release=True)
 
+        self.log.debug("Starting wait-loop for kbd-events")
         while self.threads_active is True:
             keyboard.wait()
 
@@ -147,6 +156,7 @@ class AsyncInputEventMonitor():
 
     async def input(self):
         ev = None
+        self.log.debug("Waiting for input event-queue")
         while ev is None:
             self.lock.acquire()
             try:
@@ -157,6 +167,7 @@ class AsyncInputEventMonitor():
                 self.lock.release()
                 ev=None
                 await asyncio.sleep(0.1)
+        self.log.debug("Input event!")
         xev={'cmd': 'input',
             'event': ev}
         return xev
@@ -176,12 +187,15 @@ class AsyncInputPresence():
             self.refresh_time=refresh_time
         else:
             self.refresh_time=0
-
+        self.log.debug("AsyncInputPresence init")
+            
     async def presence(self):
+        self.log.debug("Input.presence() started")
         state_change=False
         while state_change is False:
             try:
                 result = await asyncio.wait_for(self.input_events.input(), timeout=1)
+                self.log.debug(f"input.wait {self.state}")
                 if self.state is False or (self.state==True and self.refresh_time > 0 and time.time()-self.last_time > self.refresh_time):
                     self.last_time=time.time()
                     self.state=True

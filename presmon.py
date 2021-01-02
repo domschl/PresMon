@@ -24,6 +24,7 @@ async def main_runner(config, args):
     try:
         input_config=config['input']
     except:
+        self.log.warning("Invalid input config in yaml")
         input_config={'active': False}
     try:
         btle_config=config['bluetooth_le']
