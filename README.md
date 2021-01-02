@@ -18,7 +18,7 @@ sensor is on while keyboard hotkey is pressed), or `flipflop` mode (first time h
 
 ### Configuration file `presmon.yaml`
 
-* At mininmum, configure `mqtt: broker`. 
+* At minimum, configure `mqtt: broker`. 
 * Check which services should be active
 * After testing, increase `input: timeout` to a higher value (e.g. 300)
 
